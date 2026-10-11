@@ -245,9 +245,42 @@ if (/^\s*\{\s*$/m.test(hookPrep) || !/^\s*\(\s*$/m.test(hookPrep)) {
   throw new Error("prepare-hook-segment.sh 的每期代码块必须是子 shell 括号 `(`，不能是花括号组 `{`："
     + "块里的 `exit 1` 在花括号组里会结束整个脚本，一期失败就带走后面所有期");
 }
-for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-  if (!fs.readFileSync(path.join(ROOT, doc), "utf8").includes("check-water-ripple.py")) {
-    throw new Error(`${doc} 没有写出 check-water-ripple.py 这条验收命令：水波规则无法被执行`);
+// 规则文档语料（2026-10-11 拆分 AGENTS.md 后引入）。
+// 拆分前所有 token 都在 AGENTS.md 一份文件里；现在规则按主题落在 docs/rules/*.md，
+// AGENTS.md 只剩主干与索引。于是「某条规则是否被写下来了」不能再问单份文件，
+// 必须问**整个规则语料**——否则拆分本身就会把 15 个门禁 token 全部变成「没写」。
+//
+// 为什么这个语料函数而不是逐个检查点自己拼路径：12 处检查点各写一遍
+// 「AGENTS.md + docs/rules/* + playbook」，迟早有一处漏掉那一层，而漏掉的那处
+// 恰好是它检查的 token 所在的那份文件——于是规则明明在、门禁却报「无法被执行」，
+// 下一个人的反应是往 AGENTS.md 里补一句复制品，拆分白做。
+const RULE_DOC_DIR = "docs/rules";
+function ruleDocsCorpus() {
+  const files = ["AGENTS.md", "docs/book-video-playbook.md"];
+  if (fs.existsSync(path.join(ROOT, RULE_DOC_DIR))) {
+    for (const f of fs.readdirSync(path.join(ROOT, RULE_DOC_DIR))) {
+      if (f.endsWith(".md")) files.push(`${RULE_DOC_DIR}/${f}`);
+    }
+  }
+  return files.map((f) => fs.readFileSync(path.join(ROOT, f), "utf8")).join("\n");
+}
+function ruleSays(token) {
+  return ruleDocsCorpus().includes(token);
+}
+// 规则文档目录必须存在且非空：否则语料退化成只有 AGENTS.md，而那正是拆分前的样子——
+// 所有 token 会「碰巧」还在，于是没人发现 docs/rules/ 整个丢了。
+if (!fs.existsSync(path.join(ROOT, RULE_DOC_DIR))) {
+  throw new Error(`${RULE_DOC_DIR}/ 不在了：AGENTS.md 已于 2026-10-11 拆成主干+规则索引，`
+    + "规则本体现在只存在于 docs/rules/*.md。目录丢失时下面的 token 检查会「碰巧」全绿。");
+}
+const ruleFiles = fs.readdirSync(path.join(ROOT, RULE_DOC_DIR)).filter((f) => f.endsWith(".md"));
+if (ruleFiles.length === 0) {
+  throw new Error(`${RULE_DOC_DIR}/ 是空的：规则本体已经不在 AGENTS.md 里了，空目录等于全丢`);
+}
+
+for (const doc of ["AGENTS.md", "docs/book-video-playbook.md", RULE_DOC_DIR]) {
+  if (!ruleSays("check-water-ripple.py")) {
+    throw new Error(`规则文档（含 ${doc}）没有写出 check-water-ripple.py 这条验收命令：水波规则无法被执行`);
   }
 }
 
@@ -345,10 +378,8 @@ for (const tool of ["scripts/audit-caption-axis.py"]) {
     throw new Error(`${tool} 不存在：字幕轴验收没有可执行的工具`);
   }
 }
-for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-  if (!fs.readFileSync(path.join(ROOT, doc), "utf8").includes("audit-caption-axis.py")) {
-    throw new Error(`${doc} 没有写出 audit-caption-axis.py 这条验收命令：字幕轴规则无法被执行`);
-  }
+if (!ruleSays("audit-caption-axis.py")) {
+  throw new Error("规则文档没有写出 audit-caption-axis.py 这条验收命令：字幕轴规则无法被执行");
 }
 
 // 第七道门（2026-09-28《恶女的告白》）：逐行字幕窗必须盖住「这一行自己的字被念出来」的窗。
@@ -425,8 +456,8 @@ for (const [tool, why] of [["scripts/snap-body-timings-vad.py", "修轴脚本"],
     throw new Error("scripts/audit-caption-axis.py 的行首修补（fix_heads）不再借用 lib 的 own span（D2）："
       + "连读段里行首落后无人可修，第七道逐行覆盖门会重新变成渲染后才暴露的红");
   }
-  if (!fs.readFileSync(path.join(ROOT, "AGENTS.md"), "utf8").includes("late-start-own")) {
-    throw new Error("AGENTS.md 没写出 late-start-own（连读段行首兜底）：这条修轴规则无法被执行");
+  if (!ruleSays("late-start-own")) {
+    throw new Error("规则文档没写出 late-start-own（连读段行首兜底）：这条修轴规则无法被执行");
   }
 }
 // 第七道门 T2 的「读完所需」豁免（2026-10-04《人性的枷锁》行 72「而是：」）：
@@ -464,8 +495,8 @@ for (const [tool, why] of [["scripts/snap-body-timings-vad.py", "修轴脚本"],
     throw new Error("audit-caption-axis.py 的 density() 不再传 readable=：修轴的手按旧口径裁尾巴，门禁刚裁完就判红");
   }
   for (const token of ["reading_need", "富余停留"]) {
-    if (!fs.readFileSync(path.join(ROOT, "AGENTS.md"), "utf8").includes(token)) {
-      throw new Error(`AGENTS.md 没写出 ${token}：T2 的富余停留口径无法被执行`);
+    if (!ruleSays(token)) {
+      throw new Error(`规则文档没写出 ${token}：T2 的富余停留口径无法被执行`);
     }
   }
 }
@@ -585,8 +616,8 @@ for (const [tool, why] of [["scripts/snap-body-timings-vad.py", "修轴脚本"],
       + "「窗内语音 100% <45%」这类自相矛盾的文案会把人推去追一条并没有红的线");
   }
   for (const token of ["控制 token", "按位对位", "编时刻"]) {
-    if (!fs.readFileSync(path.join(ROOT, "AGENTS.md"), "utf8").includes(token)) {
-      throw new Error(`AGENTS.md 没写出 ${token}：自身可听窗的这条口径无法被执行`);
+    if (!ruleSays(token)) {
+      throw new Error(`规则文档没写出 ${token}：自身可听窗的这条口径无法被执行`);
     }
   }
   // ⑤ 第三条独立证人：固定 −35 dBFS 的**绝对电平**静音段（2026-10-10《美丽新世界》
@@ -732,19 +763,19 @@ for (const [tool, why] of [["scripts/snap-body-timings-vad.py", "修轴脚本"],
     }
   }
 }
-for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-  const text = fs.readFileSync(path.join(ROOT, doc), "utf8");
-  for (const token of ["snap-body-timings-vad.py", "check-caption-speech-align.py"]) {
-    if (!text.includes(token)) {
-      throw new Error(`${doc} 没有写出 ${token}：逐行覆盖规则无法被执行`);
-    }
+for (const token of ["snap-body-timings-vad.py", "check-caption-speech-align.py"]) {
+  if (!ruleSays(token)) {
+    throw new Error(`规则文档没有写出 ${token}：逐行覆盖规则无法被执行`);
   }
-  // 建轴链里覆盖必须排在能量审计之前：审计的 C 规则裁的正是覆盖加的尾部停留，反过来会被撑开。
+}
+// 建轴链里覆盖必须排在能量审计之前：审计的 C 规则裁的正是覆盖加的尾部停留，反过来会被撑开。
+{
+  const text = ruleDocsCorpus();
   const chain = text.split("\n").find((ln) => ln.includes("create-body-timings-precise.mjs")
                                         && ln.includes("audit-caption-axis.py"));
   if (!chain || chain.indexOf("snap-body-timings-vad.py") < 0
       || chain.indexOf("snap-body-timings-vad.py") > chain.indexOf("audit-caption-axis.py")) {
-    throw new Error(`${doc} 的建轴顺序不再是「token 轴 → 覆盖 → 能量审计」：先审计会把覆盖裁掉`);
+    throw new Error(`规则文档的建轴顺序不再是「token 轴 → 覆盖 → 能量审计」：先审计会把覆盖裁掉`);
   }
 }
 
@@ -1113,15 +1144,15 @@ for (const rel of ["scripts/lib/title-font.json", "scripts/lib/title_font.py",
   }
   // 门禁要有可执行的真源，也要有说清「为什么有这道门」的文档：两者缺一个，下一个人要么
   // 把它当多余的红灯摘掉，要么根本不知道该跑它（沿用本仓库每道门都写进两份文档的口径）。
-  for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-    const docSrc = fs.readFileSync(path.join(ROOT, doc), "utf8");
-    if (!docSrc.includes("check-title-font.py")) {
-      throw new Error(`${doc} 没有写出 check-title-font.py 这条验收命令：书名字体规则无法被执行`);
-    }
-    if (!/title-font\.json/.test(docSrc)) {
-      throw new Error(`${doc} 没有点名 scripts/lib/title-font.json：字体真源在文档里失踪，`
-        + "下一个人只会去渲染器里改 font-family");
-    }
+  // 2026-10-11 起判据落在**规则语料**上而非单份文件：书名字体规则已随封面层拆到
+  // docs/rules/book-cover-overlay.md，只查 AGENTS.md 会在拆分当天报「无法被执行」，
+  // 而下一个人对这类红的反应是往 AGENTS.md 补一句复制品——拆分就白做了。
+  if (!ruleSays("check-title-font.py")) {
+    throw new Error("规则文档没有写出 check-title-font.py 这条验收命令：书名字体规则无法被执行");
+  }
+  if (!ruleSays("title-font.json")) {
+    throw new Error("规则文档没有点名 scripts/lib/title-font.json：字体真源在文档里失踪，"
+      + "下一个人只会去渲染器里改 font-family");
   }
   // 片头的字体不在本次授权范围内（改的是正文那两层）。片头观感本身归 10-05/10-06 那几轮
   // 裁决管，这里只钉一件事：书名层的字体改动不许顺手蔓延到片头。
@@ -1427,15 +1458,12 @@ for (const rel of ["scripts/lib/book-cover.json", "scripts/lib/book_cover.py",
       + "封面时刻是相对「固定开场白结束」算的，取样点整体偏移就会把桥接卡读成正文");
   }
   // 门禁要有可执行的真源，也要有说清「为什么有这道门」的文档（沿用每道门写进两份文档的口径）。
-  for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-    const docSrc = fs.readFileSync(path.join(ROOT, doc), "utf8");
-    if (!docSrc.includes("check-book-cover-overlay.py")) {
-      throw new Error(`${doc} 没有写出 check-book-cover-overlay.py 这条验收命令：封面层规则无法被执行`);
-    }
-    if (!/book-cover\.json/.test(docSrc)) {
-      throw new Error(`${doc} 没有点名 scripts/lib/book-cover.json：卡框/投影/时序的真源在文档里失踪，`
-        + "下一个人只会去渲染器里改坐标或秒数");
-    }
+  if (!ruleSays("check-book-cover-overlay.py")) {
+    throw new Error("规则文档没有写出 check-book-cover-overlay.py 这条验收命令：封面层规则无法被执行");
+  }
+  if (!ruleSays("book-cover.json")) {
+    throw new Error("规则文档没有点名 scripts/lib/book-cover.json：卡框/投影/时序的真源在文档里失踪，"
+      + "下一个人只会去渲染器里改坐标或秒数");
   }
 }
 
@@ -1531,11 +1559,9 @@ for (const [file, tokens] of [
     }
   }
 }
-for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-  if (!fs.readFileSync(path.join(ROOT, doc), "utf8").includes("pexels_index.py")) {
-    throw new Error(`${doc} 没有写出 pexels_index.py：跨期去重规则无法被执行，只能退回「靠批次脚本自觉」`);
+if (!ruleSays("pexels_index.py")) {
+    throw new Error("规则文档没有写出 pexels_index.py：跨期去重规则无法被执行，只能退回「靠批次脚本自觉」");
   }
-}
 
 // 持久否决名单（data/pexels-rejected.json）：`--exclude-used` 只认「已经上过屏」，
 // 而目检否决的图恰恰从未上过屏，于是同一批废图每一批都会重新端上来——2026-10-03 第四批里
@@ -1595,11 +1621,9 @@ if (fs.existsSync(path.join(ROOT, "data", "pexels-rejected.json"))) {
     }
   }
 }
-for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-  if (!fs.readFileSync(path.join(ROOT, doc), "utf8").includes("pexels-rejected.json")) {
-    throw new Error(`${doc} 没有写出 pexels-rejected.json：持久否决规则只活在脚本注释里，改管线的人看不见它`);
+if (!ruleSays("pexels-rejected.json")) {
+    throw new Error("规则文档没有写出 pexels-rejected.json：持久否决规则只活在脚本注释里，改管线的人看不见它");
   }
-}
 
 // 背景图的「身份」链：清单声称的 Pexels 照片 → 取图当时写下的 _provenance.json
 // → 磁盘上的 _raw/ 底图 → 调色交付的 atmosphere-N.png → 成片钩子窗里的那一帧。
@@ -1734,12 +1758,9 @@ for (const [file, tokens] of [
     }
   }
 }
-for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-  const text = fs.readFileSync(path.join(ROOT, doc), "utf8");
-  if (!text.includes("_provenance.json")) {
-    throw new Error(`${doc} 没有写出 _provenance.json：背景图身份链只活在脚本里，改管线的人看不见它`);
+if (!ruleSays("_provenance.json")) {
+    throw new Error("规则文档没有写出 _provenance.json：背景图身份链只活在脚本里，改管线的人看不见它");
   }
-}
 
 // 封面折行回归：折行是排版规则不是某一期封面，只有跑遍全部书名才看得见回归。
 // 规则本体在 make_episode_cover.wrap_title_lines()（中文禁则 + 标点锚点 + 出框），
@@ -1768,16 +1789,13 @@ if (coverWrapGate.status !== 0) {
 //     正式书名，装不下就缩字号，96px 以下照出但必须留痕。
 // 把 TITLE_LEGIBLE_MIN 滑到 60 让日志闭嘴，会把 2026-10-01 用户否掉的《恶意》96px
 // 「字体模糊不清晰」重新装回来；把 TITLE_ABSOLUTE_MIN 往下调，书名就会比钩子行还小。
-for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-  const docText = fs.readFileSync(path.join(ROOT, doc), "utf8");
-  for (const token of ["ONE_LINE_MIN", "check-cover-wrapping.py",
+for (const token of ["ONE_LINE_MIN", "check-cover-wrapping.py",
                        // 2026-10-09 用户第三次就同一件事说：「根据合适排版进行缩小字号」。
                        // 原话进文档，下一个人才不会把它读成「改回折行」或「改封面用名」。
                        "根据合适排版进行缩小字号",
                        "TITLE_LEGIBLE_MIN", "TITLE_ABSOLUTE_MIN"]) {
-    if (!docText.includes(token)) {
-      throw new Error(`${doc} 没有写出 ${token}：封面书名「一律单行 + 缩小字号」这条裁决无法被执行`);
-    }
+  if (!ruleSays(token)) {
+    throw new Error(`规则文档没有写出 ${token}：封面书名「一律单行 + 缩小字号」这条裁决无法被执行`);
   }
 }
 
@@ -1823,10 +1841,8 @@ for (const gate of ["check-image-provenance.py", "check-caption-punctuation.py",
     throw new Error(`${deliveryGateFile} 不再调用 ${gate}：交付门禁被静默拆掉了一道`);
   }
 }
-for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
-  if (!fs.readFileSync(path.join(ROOT, doc), "utf8").includes(deliveryGateFile)) {
-    throw new Error(`${doc} 没有写出 ${deliveryGateFile} 这条交付命令：门禁无法被执行`);
-  }
+if (!ruleSays(deliveryGateFile)) {
+  throw new Error(`规则文档没有写出 ${deliveryGateFile} 这条交付命令：门禁无法被执行`);
 }
 
 // 钩子文案的两条「只有连着发才看得见」的门禁：第二行开头装置族过载、封面钩子与第二行
