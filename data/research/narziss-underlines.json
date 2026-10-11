@@ -1,0 +1,5 @@
+{
+  "errcode": -2003,
+  "errlog": "C1RB25L",
+  "errmsg": "缺少必填参数: chapterUid (章节 UID（从 /book/chapterinfo 获取）)"
+}

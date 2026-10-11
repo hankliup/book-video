@@ -140,3 +140,13 @@ A shell line that reads fine in one session can abort a whole render in another,
 ## Delivery
 
 Every rendered video must be shown directly in the conversation using an absolute local-path Markdown media reference. This applies to final videos and silent visual previews; a path-only response is incomplete.
+
+## Cleanup
+
+Delivery passing is what makes an episode's render directory recyclable. One body render leaves 180-585 MB in `tmp/<书名>_tpl/` — `body.mp4`, `body-bg.mp4`, `sub.mov`, `cover-seq/` (one PNG per frame) and one `cap-*.png` per subtitle row. All of it is rebuildable from `episodes/<书名>/` via the caption track plus the body stills; the directory's own docstring calls it 渲染中间目录, i.e. scratch, not product. Measured 2026-10-11: 31 delivered episodes held 10.8 GB of it, none reclaimed, because the only `rm -rf` in `render-hook-batch.sh` targets the render lock and this stage did not exist.
+
+After `check-episode-delivery.py` passes for an episode, run `node scripts/cleanup-tmp.mjs --apply`. It keeps `caption-track.json` (the subtitle-axis source `find_tmp_dir()` falls back to when a re-verification finds no copy under `episodes/`), the `-sha` fingerprints that let a re-render skip unchanged book-cover and disclaimer composites, and the small config snapshots those gates read; it removes only media, frame sequences, subtitle bitmaps and `_qc/` stills. It defaults to a dry run — read the line, then re-run with `--apply`. It refuses any episode without `episodes/<书名>/renders/<书名>-final.mp4`; pass `--all` only when deliberately re-rendering.
+
+Keep the suffix written as `-sha`, not `.sha`: the fingerprint files are named `body.mp4.book-cover-sha`, so `endsWith(".sha")` matches nothing and the fast path is deleted as if it were scratch. Deleting a fingerprint is not a correctness problem — the next render recomputes it — but it does the full composite again for no reason.
+
+Do not keep render scratch to "remember where an episode stopped". `check-image-provenance.py` already proved that a file merely existing proves nothing: a manifest wanting Pexels #A over a disk holding #B stayed green through eight gates. A leftover directory is the same claim in weaker form.

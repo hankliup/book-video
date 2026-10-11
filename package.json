@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "check": "node scripts/check.mjs",
+    "cleanup:tmp": "node scripts/cleanup-tmp.mjs",
     "smoke:timings": "node scripts/tests/smoke-timing-fallback.mjs"
   }
 }

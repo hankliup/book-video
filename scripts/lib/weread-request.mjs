@@ -1,7 +1,7 @@
 import { readEnvValue } from "./env.mjs";
 
 const GATEWAY = "https://i.weread.qq.com/api/agent/gateway";
-export const WEREAD_SKILL_VERSION = "1.0.4";
+export const WEREAD_SKILL_VERSION = "1.0.5";
 
 export function getWeReadApiKey() {
   return process.env.WEREAD_API_KEY || readEnvValue("WEREAD_API_KEY");

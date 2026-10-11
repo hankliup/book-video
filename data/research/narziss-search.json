@@ -1,0 +1,163 @@
+{
+  "sid": "BtL21F0dcA",
+  "results": [
+    {
+      "title": "电子书",
+      "books": [
+        {
+          "searchIdx": 1,
+          "bookInfo": {
+            "bookId": "3300026565",
+            "deepLink": "https://weread.qq.com/book-detail?type=1&v=1ec32c30813ab70e0g015615",
+            "readerLink": "https://weread.qq.com/web/reader/1ec32c30813ab70e0g015615",
+            "title": "纳尔奇思与歌尔得蒙（黑塞精选集）",
+            "author": "赫尔曼•黑塞",
+            "translator": "杨武能",
+            "cover": "https://cdn.weread.qq.com/weread/cover/2/cpPlatform_1Q9bkf5hyW5EJzLpjWSUSb/s_cpPlatform_1Q9bkf5hyW5EJzLpjWSUSb.jpg",
+            "payType": 4097,
+            "type": 0,
+            "soldout": 0,
+            "newRatingDetail": {
+              "title": "神作潜力"
+            },
+            "newRatingCount": 125,
+            "newRating": 905
+          },
+          "readingCount": 27
+        },
+        {
+          "searchIdx": 2,
+          "bookInfo": {
+            "bookId": "3300049683",
+            "deepLink": "https://weread.qq.com/book-detail?type=1&v=34732ec0813ab79e8g013a4a",
+            "readerLink": "https://weread.qq.com/web/reader/34732ec0813ab79e8g013a4a",
+            "title": "纳尔奇思与歌尔得蒙",
+            "author": "[德]赫尔曼·黑塞",
+            "translator": "杨武能",
+            "cover": "https://cdn.weread.qq.com/weread/cover/31/cpplatform_5un964bpqkto6ezls4qxq8/s_cpplatform_5un964bpqkto6ezls4qxq81677057283.jpg",
+            "payType": 4097,
+            "type": 0,
+            "soldout": 0,
+            "newRatingDetail": {
+              "title": ""
+            },
+            "newRatingCount": 130,
+            "newRating": 783
+          },
+          "readingCount": 2
+        },
+        {
+          "searchIdx": 3,
+          "bookInfo": {
+            "bookId": "3300046783",
+            "deepLink": "https://weread.qq.com/book-detail?type=1&v=83132770813ab78c6g013ba8",
+            "readerLink": "https://weread.qq.com/web/reader/83132770813ab78c6g013ba8",
+            "title": "精神与爱欲（果麦经典）",
+            "author": "[德]赫尔曼·黑塞",
+            "translator": "易海舟",
+            "cover": "https://cdn.weread.qq.com/weread/cover/18/cpplatform_a1bnfbwee5sx4yckmgzifh/s_cpplatform_a1bnfbwee5sx4yckmgzifh1674036359.jpg",
+            "payType": 4097,
+            "type": 0,
+            "soldout": 0,
+            "newRatingDetail": {
+              "title": "好评如潮"
+            },
+            "newRatingCount": 6127,
+            "newRating": 899
+          },
+          "readingCount": 136
+        },
+        {
+          "searchIdx": 4,
+          "bookInfo": {
+            "bookId": "3300104874",
+            "deepLink": "https://weread.qq.com/book-detail?type=1&v=a3b32850813ab8f77g014c0a",
+            "readerLink": "https://weread.qq.com/web/reader/a3b32850813ab8f77g014c0a",
+            "title": "纳尔齐斯与歌尔德蒙",
+            "author": "[德]赫尔曼·黑塞",
+            "translator": "杨武能",
+            "cover": "https://cdn.weread.qq.com/weread/cover/19/cpplatform_4fgw1uj4udyu83xqvjdh1n/s_cpplatform_4fgw1uj4udyu83xqvjdh1n1720496383.jpg",
+            "payType": 4097,
+            "type": 0,
+            "soldout": 0,
+            "newRatingDetail": {
+              "title": ""
+            },
+            "newRatingCount": 155,
+            "newRating": 865
+          },
+          "readingCount": 11
+        },
+        {
+          "searchIdx": 5,
+          "bookInfo": {
+            "bookId": "3300149060",
+            "deepLink": "https://weread.qq.com/book-detail?type=1&v=7d732cf0813aba0bag010910",
+            "readerLink": "https://weread.qq.com/web/reader/7d732cf0813aba0bag010910",
+            "title": "纳尔齐斯与歌尔德蒙",
+            "author": "[德]赫尔曼·黑塞",
+            "translator": "",
+            "cover": "https://cdn.weread.qq.com/weread/cover/81/cpplatform_bk9ezd9iv5cr13hbqsw54a/s_cpplatform_bk9ezd9iv5cr13hbqsw54a1750149409.jpg",
+            "payType": 4097,
+            "type": 0,
+            "soldout": 0,
+            "newRatingDetail": {
+              "title": ""
+            },
+            "newRatingCount": 320,
+            "newRating": 895
+          },
+          "readingCount": 44
+        }
+      ],
+      "scope": 17,
+      "scopeCount": 9,
+      "currentCount": 5,
+      "type": 1
+    },
+    {
+      "title": "待上架",
+      "books": [
+        {
+          "searchIdx": 1,
+          "bookInfo": {
+            "bookId": "41139890",
+            "deepLink": "https://weread.qq.com/book-detail?type=1&v=870324e07273beb28703b24",
+            "readerLink": "https://weread.qq.com/web/reader/870324e07273beb28703b24",
+            "title": "纳尔奇思与歌尔得蒙",
+            "author": "[德]赫尔曼·黑塞",
+            "translator": "杨武能",
+            "cover": "https://wfqqreader-1252317822.image.myqcloud.com/cover/890/41139890/s_41139890.jpg",
+            "payType": 1,
+            "type": 0,
+            "soldout": 1,
+            "newRatingDetail": {
+              "title": "神作"
+            },
+            "newRatingCount": 1149,
+            "newRating": 910
+          },
+          "readingCount": 0
+        }
+      ],
+      "scope": 3,
+      "scopeCount": 2,
+      "currentCount": 1,
+      "type": 3
+    },
+    {
+      "title": "书单",
+      "type": 7,
+      "scope": 13,
+      "scopeCount": 4298,
+      "currentCount": 1
+    },
+    {
+      "title": "",
+      "type": 5,
+      "scope": 12,
+      "scopeCount": 16,
+      "currentCount": 10
+    }
+  ]
+}

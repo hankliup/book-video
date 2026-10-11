@@ -677,6 +677,54 @@ for (const [tool, why] of [["scripts/snap-body-timings-vad.py", "修轴脚本"],
   if (!/-35(\.0)?\s*dBFS/.test('print(f"噪声底 -35 dBFS → 静音段 N 个")')) {
     throw new Error("手抄 -35 dBFS 的判据永不命中：那条断言测不到任何东西")
   }
+
+  // 富余停留那条回归测试必须复现**整条** T2 判据，不是它的一半。2026-10-11 发现它只写了
+  // `v < FLOOR or r < RAW_FLOOR`：10-10 兜底线改成两条证人的合取之后，这条测试在替一个已经
+  // 退休的形状当证人，而它自己跑得很绿。后果当场露出来——旧②拿 193.00–193.90 当「整窗压在
+  // 真空静上」，实测这段窗原始密度 0%、抬在噪声底之上 100%，shipped 口径下它是绿的。
+  // 所以钉三样：合取的两行、被换到实测静音跑上的②、以及把旧窗钉成「必须是绿」的 ②b 退休对照；
+  // 再加⑦⑧那两组**真实数据**交互臂（按掉豁免 / 按掉电平各掉一行），它们是「豁免与证人相互
+  // 独立」这件事唯一的实物证据——合成轴造不出「只需要一半」和「两半都要」这两种形状并存。
+  const vrTestFile = "scripts/tests/test-voiced-share-readable.py";
+  const vrTestPath = path.join(ROOT, vrTestFile);
+  if (!fs.existsSync(vrTestPath)) {
+    throw new Error(`${vrTestFile} 不存在：富余停留豁免只有当期那一次实测，没有可复现的对照`);
+  }
+  const vrTest = fs.readFileSync(vrTestPath, "utf8");
+  const vrGuards = [
+    [/an = None if sil is None else above_noise_share\(sil, cs, ce\)/, "t2() 不再向绝对电平证人要第二个操作数：兜底线重新只由本期响度决定"],
+    [/if quiet and sil is not None:\n\s*quiet = an < RAW_FLOOR/, "合取的第二半被删掉：测试回到 10-10 之前的半条口径"],
+    [/PARK_WIN = \(196\.95, 197\.65\)/, "②不再站在实测静音跑上：那条「整窗无声」的对照会是永真的"],
+    [/\(193\.00, 193\.90\)[\s\S]{0,400}?不再是绿/, "②b 退休对照没了：没人拦住把②挪回那个 shipped 口径判绿的窗"],
+    [/SIL_52/, "美丽新世界 行52（两半都要）这组真实夹具被删：⑦变成合成轴上的空话"],
+    [/SIL_86/, "同一期 行86（只要电平这一半）被删：⑦⑧ 的互斥对照做不成，读不出是同一手在救"],
+  ];
+  for (const [re, why] of vrGuards) {
+    if (!re.test(vrTest)) {
+      throw new Error(`${vrTestFile} 失去 ${why}：门禁改口径而它的回归还在替旧形状作证`);
+    }
+  }
+  // 噪声底只有一个真源，测试也不例外：它用 above_noise_share，不需要知道那个数。
+  if (/-35(\.0)?\s*dBFS/.test(vrTest)) {
+    throw new Error(`${vrTestFile} 里出现手抄的 -35 dBFS：噪声底必须留在 lib 那一侧`)
+  }
+  // 自证：把被撤的半条口径重新注回上面每一条谓词，谓词必须翻（否则「必须还包含 X」是空转）。
+  for (const [mutated, re, name] of [
+    [vrTest.replace(/[ \t]*if quiet and sil is not None:\n[ \t]*quiet = an < RAW_FLOOR\n/, ""),
+     /if quiet and sil is not None:/, "撤掉合取的第二半（回到只看自适应密度的兜底）"],
+    [vrTest.replace(/else above_noise_share\(sil, cs, ce\)/, "else burst_share(bursts, cs, ce)"),
+     /else above_noise_share\(sil, cs, ce\)/, "把电平证人换成密度证人自己：合取退化成同一条线量两遍"],
+    [vrTest.replace(/PARK_WIN = \(196\.95, 197\.65\)/, "PARK_WIN = (193.00, 193.90)"),
+     /PARK_WIN = \(196\.95, 197\.65\)/, "②挪回那截其实有声的窗"],
+    [vrTest.replace(/[ \t]*# ②b 旧②用的[\s\S]*?当可用的控制"\)\n/, ""),
+     /\(193\.00, 193\.90\)[\s\S]{0,400}?不再是绿/, "删掉 ②b 整段退休对照"],
+    [vrTest.replace(/SIL_52/g, "BN_52"), /SIL_52/, "行52 的电平夹具改名成密度夹具（等于没有第二条证人）"],
+    [vrTest.replace(/SIL_86/g, "BN_86"), /SIL_86/, "同上，方向在行86"],
+  ]) {
+    if (re.test(mutated)) {
+      throw new Error(`富余停留回归的静态判据推不动（${name}）：形状改掉了而 check 仍然绿，那条断言是空转`)
+    }
+  }
 }
 for (const doc of ["AGENTS.md", "docs/book-video-playbook.md"]) {
   const text = fs.readFileSync(path.join(ROOT, doc), "utf8");
@@ -2890,6 +2938,65 @@ try {
   }
 } finally {
   fs.rmSync(templateDir, { recursive: true, force: true });
+}
+
+// ---------------------------------------------------------------------------
+// 渲染中间产物的回收（2026-10-11 新增）
+// 这道门守的不是「画面对不对」，而是「磁盘有没有被暂存区吃光」。
+//
+// 一次正文渲染往 tmp/<书名>_tpl/ 落下 body.mp4 / body-bg.mp4 / sub.mov / cover-seq/ 逐帧 PNG
+// 和每行一张的 cap-*.png，单期 180-585 MB。全部可由 episodes/<书名>/ 重建（该目录自己的
+// docstring 就写着「渲染中间目录」）。实测 2026-10-11：31 期已交付的剧集压着 10.8 GB，
+// render-hook-batch.sh 里唯一的 rm -rf 指向渲染锁，AGENTS.md 搜「清理」零命中，
+// Delivery 阶段只要求把成片贴进对话——所以它从来没被回收过。
+//
+// 门禁查三件���，缺一不可：
+//   ① 清理脚本存在且可执行语法检查，防止它在不在这个检查里退化掉；
+//   ② 保留清单**必须**含字幕轴与 -sha 指纹。字幕轴是 check-episode-delivery.py 的
+//      find_tmp_dir() 回落目标，删了它，下次重验交付时那几道字幕门禁会报
+//      「找不到字幕轨」而不是报真问题。指纹是 -sha 不是 .sha（body.mp4.book-cover-sha
+//      的真实后缀带连字符）——写成 .sha 会一个都匹配不到，幂等快路径被当中间件清掉；
+//   ③ 保留清单**不得**含媒体中间件，否则这个脚本自己就变成了它要清理的东西。
+const cleanupFile = "scripts/cleanup-tmp.mjs";
+if (!fs.existsSync(path.join(ROOT, cleanupFile))) {
+  throw new Error(`${cleanupFile} 不存在：渲染中间产物没有回收路径，tmp/*_tpl/ 会按单期 180-585 MB `
+    + "持续堆积（2026-10-11 实测 31 期已积 10.8 GB）。见 AGENTS.md 的 Cleanup 阶段");
+}
+// 导入脚本里**真正跑的**保留判定，而不是在源码里 grep 字符串：grep 只能证明
+// 「这段文字出现过」，证明不了「cover-seq/f_0000.png 会被删」。两边共用一个实现，
+// 判定口径才不会各写一份然后漂（和 check-image-provenance.py 共用 crop_3x4() 同理）。
+const cleanup = await import("./lib/cleanup-keep.mjs");
+// 用真实的判定跑一遍这几类文件，证明「保的留下、该删的删掉」，而不只是证明代码存在。
+for (const [rel, shouldKeep, why] of [
+  ["caption-track.json", true, "字幕轴是交付门禁 find_tmp_dir() 的回落目标，删了重验交付会报「找不到字幕轨」"],
+  ["body.mp4.book-cover-sha", true, "重渲幂等指纹；后缀是 -sha 不是 .sha，写成 .sha 一个都匹配不到"],
+  ["body.mp4.book-cover-sha.txt", false, "指纹文件不带 .txt 后缀"],
+  ["body.mp4", false, "正文中间件，可由 caption-track.json + images-body/ 重建"],
+  ["body-bg.mp4", false, "背景中间件，可重建"],
+  ["sub.mov", false, "字幕轨中间件，可重建"],
+  ["cover-seq/f_0000.png", false, "逐帧 PNG 序列——31 期里最没必要保留的部分，必须递归删掉"],
+  ["cover-seq/_blank.png", false, "同上，帧序列目录内的一切"],
+  ["cap-000-1.png", false, "字幕位图，可重建"],
+]) {
+  const got = cleanup.isKeepTarget(rel);
+  if (got !== shouldKeep) {
+    throw new Error(`${cleanupFile} 的保留判定对 ${rel} 返回 ${got}，应为 ${shouldKeep}——${why}`);
+  }
+}
+// 保留清单不得含媒体后缀，否则这个脚本自己就变成了它要清理的东西。
+for (const name of cleanup.KEEP_EXACT) {
+  if (/\.(mp4|mov|png|m4a|mp3)$/i.test(name)) {
+    throw new Error(`${cleanupFile} 的 KEEP_EXACT 含媒体文件 ${name}：保留清单只放字幕轴、指纹和配置快照`);
+  }
+}
+for (const suffix of cleanup.KEEP_SUFFIX) {
+  if (/\.(mp4|mov|png|m4a|mp3)$/i.test(suffix)) {
+    throw new Error(`${cleanupFile} 的 KEEP_SUFFIX 含媒体后缀 ${suffix}：保留清单只放字幕轴、指纹和配置快照`);
+  }
+}
+// _raw 是 Pexels 原图：grading --restore 靠它复原，清掉等于不可逆地毁掉溯源链的一环。
+if (!cleanup.PROTECTED.has("_raw")) {
+  throw new Error(`${cleanupFile} 的 PROTECTED 丢了 _raw：它是 Pexels 原图，grade-atmosphere-images.py --restore 靠它复原`);
 }
 
 const modelPath = path.join(ROOT, "assets", "models", "whisper", "ggml-base.bin");
