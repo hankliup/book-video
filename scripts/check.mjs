@@ -284,6 +284,41 @@ for (const doc of ["AGENTS.md", "docs/book-video-playbook.md", RULE_DOC_DIR]) {
   }
 }
 
+// 钩子草稿的 status 必须落在**已约定的取值**里（2026-10-11 新增）。
+// 为什么这道门存在：promote-hook-draft.py 只认 `approved`，其余一律报「未批准不得提升」，
+// 看上去是一条干净的规则。可 status 字段从来没有单一真源——2026-10-11 实测 142 份草稿里
+// 出现了 pending / pending_approval / pending-approval / pending_user_approval 四种拼法，
+// 加上 4 份干脆没有 status，一共 5 种表达同一种「还没批」。于是「还有多少草稿待审」这种问题
+// 任何按值查询的脚本都会漏掉其中几种，而漏掉的表现是静默的：草稿躺在盘上没人推进，
+// 也看不出为什么没人推进。归一后取值只有 approved / draft / pending 三个。
+const HOOK_DRAFT_DIR = path.join(ROOT, "data", "hook-drafts");
+const HOOK_STATUS_ALLOWED = new Set(["approved", "draft", "pending"]);
+if (fs.existsSync(HOOK_DRAFT_DIR)) {
+  const badStatuses = [];
+  for (const f of fs.readdirSync(HOOK_DRAFT_DIR)) {
+    if (!f.endsWith(".json")) continue;
+    const src = fs.readFileSync(path.join(HOOK_DRAFT_DIR, f), "utf8");
+    let draft;
+    try {
+      draft = JSON.parse(src);
+    } catch (e) {
+      badStatuses.push(`${f}（不是合法 JSON：${String(e.message).slice(0, 60)}）`);
+      continue;
+    }
+    const s = draft.status;
+    if (!HOOK_STATUS_ALLOWED.has(s)) {
+      badStatuses.push(`${f}（status=${JSON.stringify(s)}）`);
+    }
+  }
+  if (badStatuses.length) {
+    throw new Error(`data/hook-drafts/ 里有 ${badStatuses.length} 份 status 不在 `
+      + `{${[...HOOK_STATUS_ALLOWED].join(", ")}} 里：${badStatuses.slice(0, 6).join("；")}`
+      + (badStatuses.length > 6 ? " …" : "")
+      + "。待审批的草稿统一写 pending，已批准写 approved，仍在起草写 draft——"
+      + "取值没有单一真源时，「还剩多少待审」会静默漏掉其中几种。");
+  }
+}
+
 // 封面同窗的取证口径（2026-10-08《荒凉山庄》候选被判「只加水声」之后立的这一套）：
 // 本书封面这一层现在**整段压在涟漪中心上**，还按 lib 的 motion 逐帧放大。门量的是「径向逐帧差
 // 质心向外跑」，卡片那份靠中心的向外位移不摘掉就会被读成涟漪在向内收（实测不排 −80px/ρ−0.96
