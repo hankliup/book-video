@@ -186,6 +186,12 @@ function listCodeFiles(dir) {
   const out = [];
   for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
     if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
+    // archive/ 是历史留存，不是生产面：里面的文件不参与任何判定。
+    // 不排除的话，2026-10-11 归档的 25 个期专用渲染器会被重新拖回门禁扫描范围——
+    // 它们各自复制了一份 WATER_OFFSET，而 WATER_OFFSET 只能定义一次这条规则
+    // 会当场翻红；更糟的是 water.mp3 豁免判定也会把它们算进来。
+    // 「归档」必须对扫描面真正隐形，只靠挪目录位置是不够的。
+    if (entry.name === "archive") continue;
     const rel = path.join(dir, entry.name);
     if (entry.isDirectory()) out.push(...listCodeFiles(rel));
     else if (/\.(?:py|mjs|js)$/.test(entry.name)) out.push(rel);
@@ -766,6 +772,15 @@ for (const [pat, why] of [[/atrim=0:1\.06/, "水波 atrim 写成了硬编码秒�
 // 判定：凡引用 assets/sfx/water.mp3 的渲染脚本，必须 ① 从 lib 拿常数 ② 背景层真的调 ripple()
 // ③ 把 check-water-ripple.py 卡在成片激活之前。例外只能是早于本规则的历史脚本，
 // 且必须显式写进 WATER_LEGACY_BASELINE —— 新增期专用渲染器不再允许走「警告」这条路。
+//
+// 2026-10-11 归档：这份名单原本 26 条里有 18 条指向「期专用兜底渲染器」——每期一份、
+// 硬编码书名、复制同一套渲染逻辑。它们在 2026-10-08 10:46 被 render_scene_map_template_fallback.py
+// （EPISODE 环境变量驱动、读 scene-map.json）整体取代，之后再没被生产入口调用过。
+// 那 18 条连同文件一起移入 scripts/archive/legacy-renderers/，豁免随之撤销：
+// 归档目录不在 listCodeFiles("scripts") 的扫描面内，所以它们既不参与判定也不需要豁免。
+// 留下的 8 条是**仍在生产面**的早期路径（分块渲染器、早期拼装器、render_witte.py），
+// 它们的豁免仍然有效——这些路径确实还在被 check-render-artifacts.py 一类调用。
+// 若哪天其中某条也被取代，删掉它的豁免即可；删不掉也不该新增，新脚本一律走硬门禁。
 const WATER_LEGACY_BASELINE = new Set([
   "scripts/_final_mux_rxdl.mjs",
   "scripts/_manual-final-mux.mjs",
@@ -774,37 +789,17 @@ const WATER_LEGACY_BASELINE = new Set([
   "scripts/render-dorian-chunked.mjs",
   "scripts/render-episode-final-xw.mjs",
   "scripts/render-whale-chunked.mjs",
-  "scripts/render_bqp_fallback.py",
-  "scripts/render_dorian_fallback.py",
-  "scripts/render_dorian_template_fallback.py",
-  "scripts/render_hobbit_fallback.py",
-  "scripts/render_hobbit_template_fallback.py",
-  "scripts/render_jingzhiniao_fallback.py",
-  "scripts/render_jingzhiniao_template_fallback.py",
-  // render_renxing_template_fallback.py（《人性的枷锁》）2026-09-27 已从本名单移除：
-  // 它原先正是「混了 water.mp3、背景层从没调 ripple()」的那一期，成片 3.32s 只有水声。
-  // 现在它走 lib/water_ripple 的常数与涟漪，并在 shutil.move 前跑 check-water-ripple.py，
-  // 所以必须留在硬门禁里——否则以后改坏了也没人拦。
-  "scripts/render_rxdl_fallback.py",
-  // render_shejie_template_fallback.py（《蛇结》）2026-09-27 已从本名单移除：
-  // 它原先混了 water.mp3 但背景层从没调 ripple()，成片 3.32s 只有水声（门禁量到逐帧差 1.17
-  // 却只外扩 17px，那份运动量全是桥接图→场景1 的交叉溶解）。现在它走 lib 的常数与涟漪，
-  // 并在 shutil.move 前跑 check-water-ripple.py，所以这三条对它是硬门禁。
-  "scripts/render_shihunling_fallback.py",
-  "scripts/render_shihunling_template_fallback.py",
-  "scripts/render_shonian_fallback.py",
-  // 《少年》的期专用兜底渲染器 render_shonian_template_fallback.py 已于 2026-09-27 移出本名单：
-  // 它现在从 lib 拿常数、在背景层调 ripple()、并把 check-water-ripple.py 卡在 shutil.move 之前，
-  // 所以对它而言这三条是硬门禁——以后谁把涟漪调用删掉，npm run check 直接判红而不是警告。
-  "scripts/render_siwushouji_fallback.py",
-  "scripts/render_werther_template_fallback.py",
   "scripts/render_witte.py",
-  "scripts/render_xgz_fallback.py",
-  "scripts/render_xiaowangzi_fallback.py",
-  "scripts/render_xiaowangzi_template_fallback.py",
-  "scripts/render_yingwang_template_fallback.py",
-  "scripts/render_百万英镑_fallback.py",
 ]);
+// 名单里每一条都必须真的还在生产面。留一个指向归档目录或不存在的路径，等于给
+// 「这台机器现在渲染的是什么」再添一条无人维护的说法——而这类说法的失效方式恰恰是
+// 全绿：豁免名单读不到任何东西时不会报错，只会让一条真规则静默失效。
+for (const file of WATER_LEGACY_BASELINE) {
+  if (!fs.existsSync(path.join(ROOT, file))) {
+    throw new Error(`WATER_LEGACY_BASELINE 里的 ${file} 不在了：要么它已归档（连同豁免一起删掉），`
+      + "要么路径被改过。豁免名单不能留悬空条目——它失效时不报错，只会让水波硬门禁静默失守。");
+  }
+}
 const waterMixers = listCodeFiles("scripts").filter((file) => {
   // lib 自身、门禁自身、测试不参与「渲染脚本必须施加涟漪」的判定：
   // check-water-ripple.py 当然要引用 water.mp3（它拿音效做互相关），但它不画水波。
@@ -883,17 +878,12 @@ const punctLibRe = /caption_display|subtitle_display|subtitle-punctuation\.json/
 const captionDrawers = listCodeFiles("scripts").filter((file) =>
   /(^|\/)render_.*\.py$/.test(file)
   && /def caption_lines/.test(fs.readFileSync(path.join(ROOT, file), "utf8")));
-const PUNCT_LEGACY_BASELINE = new Set([
-  "scripts/render_dorian_template_fallback.py",
-  "scripts/render_hobbit_template_fallback.py",
-  "scripts/render_jingzhiniao_template_fallback.py",
-  "scripts/render_renxing_template_fallback.py",
-  "scripts/render_shejie_template_fallback.py",
-  "scripts/render_shihunling_template_fallback.py",
-  "scripts/render_shonian_template_fallback.py",
-  "scripts/render_xiaowangzi_template_fallback.py",
-  "scripts/render_zhamen_template_fallback.py",
-]);
+// 2026-10-11 归档：这里原本列了 9 个期专用兜底渲染器，全部已于同日移入
+// scripts/archive/legacy-renderers/（被 render_scene_map_template_fallback.py 整体取代）。
+// 保留名单不是为了放过它们，是为了「已接上 lib 或不再画字幕」时能主动提示可清理——
+// 所以清空它，而不是把归档路径写进来。归档目录不在 listCodeFiles 的扫描面内，
+// 不需要豁免；写进来反而会让下面的 stalePunct 天天报「可清理」。
+const PUNCT_LEGACY_BASELINE = new Set([]);
 for (const file of captionDrawers) {
   if (PUNCT_LEGACY_BASELINE.has(file)) continue;
   const source = fs.readFileSync(path.join(ROOT, file), "utf8");
