@@ -1,0 +1,68 @@
+{
+  "candidates": [
+    {
+      "status": "selected",
+      "priority": "high",
+      "display_title": "贝姨",
+      "source_title": "贝姨",
+      "author": "[法]巴尔扎克",
+      "source_channel": "public-research",
+      "source_book_id": "",
+      "category": "文学-外国文学",
+      "rating": "",
+      "rating_count": "",
+      "highlight_top_count": "",
+      "resonance_score": "high",
+      "emotion_theme": "一步之遥的堕落;看着一个家怎么塌的;最恨你的人救过你;欲望的账谁来付;迟来的团圆还叫团圆吗",
+      "selection_reason": "用户指定书目。本环境微信读书接口（i.weread.qq.com / weread.qq.com）不可达，按公开资料核实：微信读书在架《贝姨》有上海三联书店2015-06（世界名著名译文库，傅雷译）、上海译文《贝姨（译文名著精选）》、读客《人间喜剧》精选集（傅雷译15篇含《贝姨》）等多个版本，均为傅雷或许钧译本；选定人民文学出版社2021-04傅雷译《贝姨》（插图本名著名译丛书，ISBN 9787020141241，376页），译名口径依傅雷译本：于洛·德·埃尔维男爵、阿特丽纳、奥当斯、李斯贝德（贝姨）、文赛斯拉·史丹卜克、玛奈弗太太（华莱丽·福丁）、克勒凡、于洛元帅、维多冷。1846年晚年作品，《人间喜剧》穷亲戚系列（与《邦斯舅舅》并列）。",
+      "video_project": "贝姨",
+      "notes": "译者傅雷；人民文学出版社2021-04；ISBN 9787020141241；微信读书在架同书上海三联书店2015-06。weread API 本环境不可达（连接超时），源版本字段待 weread 恢复后可补 source_book_id"
+    },
+    {
+      "status": "candidate",
+      "priority": "normal",
+      "display_title": "贝姨",
+      "source_title": "贝姨",
+      "author": "[法]巴尔扎克",
+      "source_channel": "weread",
+      "source_book_id": "",
+      "category": "文学-外国文学",
+      "rating": "",
+      "resonance_score": "high",
+      "emotion_theme": "一步之遥的堕落;看着一个家怎么塌的;最恨你的人救过你;欲望的账谁来付;迟来的团圆还叫团圆吗",
+      "selection_reason": "微信读书在架版本（weread.qq.com/web/bookDetail/3e6327207272cb223e69d36），上海三联书店2015-06，世界名著名译文库，傅雷译本体系，与选定版译名口径一致",
+      "notes": "上海三联书店2015-06；weread 书目页 https://weread.qq.com/web/bookDetail/3e6327207272cb223e69d36"
+    },
+    {
+      "status": "candidate",
+      "priority": "normal",
+      "display_title": "贝姨",
+      "source_title": "贝姨",
+      "author": "[法]巴尔扎克",
+      "source_channel": "weread",
+      "source_book_id": "3127866",
+      "category": "文学-外国文学",
+      "rating": 790,
+      "rating_count": 183,
+      "resonance_score": "high",
+      "emotion_theme": "一步之遥的堕落;看着一个家怎么塌的;最恨你的人救过你;欲望的账谁来付;迟来的团圆还叫团圆吗",
+      "selection_reason": "微信读书《贝姨（译文名著精选）》推荐值84.0%；许钧译本（上海译文出版社2008-07，译文名著文库，ISBN 9787532744831，豆瓣7.9/183人），译名用奥丹丝/斯坦勃克/玛纳弗/瓦莱莉体系，与已交付各期傅雷系译名不一致，仅作版本比对",
+      "notes": "译者许钧；上海译文出版社2008-07；ISBN 9787532744831；473页"
+    },
+    {
+      "status": "candidate",
+      "priority": "normal",
+      "display_title": "人间喜剧",
+      "source_title": "人间喜剧（新版典藏全集！法语翻译界泰斗傅雷历时25年传世译本，经典篇目全收录！）",
+      "author": "[法]巴尔扎克",
+      "source_channel": "weread",
+      "source_book_id": "3c332ef0811e373e7g0170d7",
+      "category": "文学-外国文学",
+      "rating": "",
+      "resonance_score": "high",
+      "emotion_theme": "一部人性百科全书;写尽你一生可能遇到的所有人",
+      "selection_reason": "读客《人间喜剧》精选集（文汇出版社2018-05，傅雷精选精译15篇，含《贝姨》，豆瓣9.4/395人），套装收录《贝姨》的另一个在架版本，作版本比对记录",
+      "notes": "译者傅雷（《猫球商店》罗新璋）；文汇出版社2018-05-20；ISBN 9787549623266"
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+#!/usr/bin/env node
+
+import fs from "node:fs";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { slugifyEpisodeName } from "./lib/episode-slug.mjs";
+import { resolveScriptVersion } from "./lib/script-version.mjs";
+
+const ROOT = process.cwd();
+const HYPERFRAMES_VERSION = "0.7.33";
+const LOCAL_HYPERFRAMES_CLI = "/Users/apple/.workbuddy/binaries/node/workspace/node_modules/hyperframes/dist/cli.js";
+// 裁切点取在片头「结果页定格」稳定展示后（结果页 2.62s 左右完成显现），
+// 让片头末帧与正文首帧同为结果桥接图，消除黑场硬切亮图的闪屏接缝。
+const INTRO_TRIM_SECONDS = Number(process.env.INTRO_TRIM_SECONDS || "1.83");
+const INTRO_OFFSET_MS = Math.round(INTRO_TRIM_SECONDS * 1000);
+const FINAL_BGM_BASE_VOLUME = 0.32;
+const FINAL_BGM_GAIN_DB = Number(process.env.FINAL_BGM_GAIN_DB || "0");
+if (!Number.isFinite(FINAL_BGM_GAIN_DB)) {
+  throw new Error(`Invalid FINAL_BGM_GAIN_DB: ${process.env.FINAL_BGM_GAIN_DB}`);
+}
+const FINAL_BGM_VOLUME = Number((FINAL_BGM_BASE_VOLUME * Math.pow(10, FINAL_BGM_GAIN_DB / 20)).toFixed(4));
+const ALLOW_OVER_60_SECONDS = process.env.ALLOW_OVER_60_SECONDS === "1";
+const INTRO_SCROLL_SFX_START_SECONDS = 1.08;
+const INTRO_SCROLL_SFX_END_SECONDS = 2.38;
+const INTRO_SCROLL_SFX_FADE_OUT_SECONDS = 0.2;
+const INTRO_SCROLL_SFX_VOLUME = 1.4;
+const INTRO_SCROLL_SFX_PATH = path.join(ROOT, "assets", "sfx", "gear-scroll.mp3");
+// 水波音效：与 body 场景水波纹涟漪同步（body 时间轴 0.32s→0.66s，对应成片 INTRO_TRIM+0.32s）
+const INTRO_WATER_SFX_PATH = path.join(ROOT, "assets", "sfx", "water.mp3");
+const INTRO_WATER_SFX_START_SECONDS = Number((INTRO_TRIM_SECONDS + 0.32).toFixed(2));
+const INTRO_WATER_SFX_VOLUME = 1.0;
+
+const [episodeName, requestedVersion, bgmInput] = process.argv.slice(2);
+
+if (!episodeName) {
+  console.error("Usage: node scripts/render-episode-final.mjs <episode-name> [script-version] [bgm-file-or-name]");
+  process.exit(1);
+}
+
+function chooseRandomBgm() {
+  const bgmDir = path.join(ROOT, "assets", "bgm");
+  const available = fs.existsSync(bgmDir)
+    ? fs.readdirSync(bgmDir).filter((name) => name.toLowerCase().endsWith(".mp3"))
+    : [];
+  if (available.length === 0) {
+    throw new Error(`No shared BGM found in ${bgmDir}`);
+  }
+  return available[Math.floor(Math.random() * available.length)];
+}
+
+const bgmArg = bgmInput || chooseRandomBgm();
+
+function slugifyBgmName(input) {
+  const name = path.basename(input, path.extname(input));
+  return name.replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "") || "bgm";
+}
+
+const slug = slugifyEpisodeName(episodeName);
+const bgmSlug = slugifyBgmName(bgmArg);
+const episodeDir = path.join(ROOT, "episodes", episodeName);
+const scriptVersion = resolveScriptVersion(episodeDir, requestedVersion);
+const audioDir = path.join(episodeDir, "audio");
+const rendersDir = path.join(episodeDir, "renders");
+const timingsPath = path.join(audioDir, "body-timings.json");
+const previewDir = path.join(ROOT, "tmp", `preview-${slug}`);
+const introDir = path.join(previewDir, "intro");
+const bodyDir = path.join(previewDir, "body");
+const finalCandidateDir = path.join(previewDir, "final");
+const introVideo = path.join(introDir, "renders", "intro.mp4");
+const bodyVideo = path.join(bodyDir, "renders", "body.mp4");
+const introVoice = path.join(ROOT, "assets", "template-audio", "intro-voiceover.mp3");
+const bodyVoice = path.join(audioDir, "body-voiceover.mp3");
+const introStoryVoice = path.join(previewDir, "audio", "intro-voiceover-story.mp3");
+const bodyStoryVoice = path.join(audioDir, "body-voiceover-story.mp3");
+const INTRO_VOICE_DURATION = probeAudioDuration(introVoice);
+const INTRO_VOICE_OFFSET_MS = Math.round(INTRO_VOICE_DURATION * 1000);
+const bgmMixSuffix =
+  FINAL_BGM_GAIN_DB === 0
+    ? "bgm-standard"
+    : `bgm-mix-${FINAL_BGM_GAIN_DB > 0 ? "plus" : "minus"}${Math.abs(FINAL_BGM_GAIN_DB)}db`;
+const outputPath = path.join(rendersDir, `${slug}-final-${bgmSlug}-story-voice-${bgmMixSuffix}.mp4`);
+const candidateOutputPath = path.join(finalCandidateDir, path.basename(outputPath));
+const introScrollSfxDuration = Number((INTRO_SCROLL_SFX_END_SECONDS - INTRO_SCROLL_SFX_START_SECONDS).toFixed(2));
+const introScrollSfxDelayMs = Math.round(INTRO_SCROLL_SFX_START_SECONDS * 1000);
+const introScrollSfxFadeOutStart = Number((introScrollSfxDuration - INTRO_SCROLL_SFX_FADE_OUT_SECONDS).toFixed(2));
+
+function run(command, args, options = {}) {
+  const result = spawnSync(command, args, {
+    cwd: options.cwd || ROOT,
+    stdio: "inherit",
+    shell: false,
+  });
+  if (result.status !== 0) process.exit(result.status ?? 1);
+}
+
+function probeVideo(filePath) {
+  const result = spawnSync(
+    "ffprobe",
+    ["-v", "error", "-show_entries", "stream=codec_type,width,height:format=duration", "-of", "json", filePath],
+    { cwd: ROOT, encoding: "utf8", shell: false },
+  );
+  if (result.status !== 0) {
+    throw new Error(`ffprobe failed for ${filePath}: ${result.stderr || "unknown error"}`);
+  }
+  const probe = JSON.parse(result.stdout);
+  const video = probe.streams?.find((stream) => stream.codec_type === "video");
+  const audio = probe.streams?.find((stream) => stream.codec_type === "audio");
+  const duration = Number(probe.format?.duration || 0);
+  if (!video || video.width !== 720 || video.height !== 960) {
+    throw new Error(`Invalid final video dimensions: ${video?.width || 0}x${video?.height || 0}`);
+  }
+  if (!audio) throw new Error("Final video has no audio stream");
+  if (!Number.isFinite(duration) || duration <= 0) throw new Error(`Invalid final duration: ${duration}`);
+  if (duration > 60.05 && !ALLOW_OVER_60_SECONDS) {
+    throw new Error(`Final video is ${duration.toFixed(2)}s; maximum is 60s`);
+  }
+}
+
+function activateFinalRender(candidatePath, destinationPath) {
+  fs.mkdirSync(rendersDir, { recursive: true });
+  fs.renameSync(candidatePath, destinationPath);
+  for (const entry of fs.readdirSync(rendersDir, { withFileTypes: true })) {
+    const entryPath = path.join(rendersDir, entry.name);
+    if (entry.isFile() && entryPath !== destinationPath) fs.rmSync(entryPath, { force: true });
+  }
+}
+
+function getBgmPath(input) {
+  const direct = path.resolve(ROOT, input);
+  if (fs.existsSync(direct)) return direct;
+  const withExt = input.endsWith(".mp3") ? input : `${input}.mp3`;
+  const fromAssets = path.join(ROOT, "assets", "bgm", withExt);
+  if (fs.existsSync(fromAssets)) return fromAssets;
+  throw new Error(`BGM not found: ${input}`);
+}
+
+function probeAudioDuration(filePath) {
+  const result = spawnSync(
+    "ffprobe",
+    ["-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filePath],
+    { cwd: ROOT, encoding: "utf8", shell: false },
+  );
+  const duration = Number(result.stdout?.trim());
+  if (result.status !== 0 || !Number.isFinite(duration) || duration <= 0) {
+    throw new Error(`Could not determine audio duration: ${filePath}`);
+  }
+  return duration;
+}
+
+function readBodyDuration() {
+  const fallbackDuration = probeAudioDuration(bodyVoice);
+  if (!fs.existsSync(timingsPath)) {
+    console.warn("Missing body-timings.json; continuing with voiceover duration and script hints");
+    return fallbackDuration;
+  }
+  let timings;
+  try {
+    timings = JSON.parse(fs.readFileSync(timingsPath, "utf8"));
+  } catch (error) {
+    console.warn(`Could not read body-timings.json; continuing with voiceover duration: ${error.message}`);
+    return fallbackDuration;
+  }
+  if (timings.scriptVersion && timings.scriptVersion !== scriptVersion) {
+    console.warn(`body-timings.json is for ${timings.scriptVersion}; continuing with script hints for ${scriptVersion}`);
+    return fallbackDuration;
+  }
+  if (timings.alignment?.requiresAgentReview) {
+    console.warn(
+      `Rendering with timings marked for Agent review (${timings.alignment.method || "unknown method"}): `
+      + `${timings.alignment.reason || "low-confidence ASR alignment"}`,
+    );
+  }
+  const timingDuration = Number(timings.duration);
+  return Number.isFinite(timingDuration) && timingDuration > 0 ? timingDuration : fallbackDuration;
+}
+
+if (!fs.existsSync(episodeDir)) throw new Error(`Episode not found: ${episodeDir}`);
+if (!fs.existsSync(introVoice)) {
+  throw new Error(`Missing shared intro voiceover: ${introVoice}`);
+}
+if (!fs.existsSync(bodyVoice)) {
+  throw new Error(`Missing episode body voiceover: ${bodyVoice}`);
+}
+if (!fs.existsSync(INTRO_SCROLL_SFX_PATH)) {
+  throw new Error(`Missing intro scroll SFX: ${INTRO_SCROLL_SFX_PATH}`);
+}
+
+const bgmPath = getBgmPath(bgmArg);
+console.log(`Using BGM: ${path.basename(bgmPath)}`);
+const bodyDuration = readBodyDuration();
+const finalDuration = Number((INTRO_TRIM_SECONDS + bodyDuration).toFixed(2));
+if (finalDuration > 60 && !ALLOW_OVER_60_SECONDS) {
+  throw new Error(`Planned final duration is ${finalDuration.toFixed(2)}s; maximum is 60s`);
+}
+
+fs.mkdirSync(rendersDir, { recursive: true });
+
+run("node", ["scripts/create-episode-preview-xw.mjs", episodeName, scriptVersion]);
+fs.mkdirSync(finalCandidateDir, { recursive: true });
+run("node", ["scripts/process-voiceover.mjs", introVoice, introStoryVoice, "story"]);
+run("node", ["scripts/process-voiceover.mjs", bodyVoice, bodyStoryVoice, "story"]);
+// 取帧默认单 Chrome worker：多 worker 栅格化竞态会渲出「某一帧只画了一半合成层」的脏帧，
+// 实测与理由见 scripts/create-episode-preview.mjs 写 package.json 处（2026-10-07）。
+// 本路径的片头段和正文段都读这个变量，所以默认值必须是 1。HF_WORKERS 保留给对照实验。
+const hfWorkers = process.env.HF_WORKERS || "1";
+const hfRenderArgs = ["render", "--quality", "standard", "--protocol-timeout", "1800000", "--workers", hfWorkers, "--output", "renders/intro.mp4"];
+if (fs.existsSync(LOCAL_HYPERFRAMES_CLI)) {
+  run("node", [LOCAL_HYPERFRAMES_CLI, ...hfRenderArgs], { cwd: introDir });
+} else {
+  run("npx", ["--yes", `hyperframes@${HYPERFRAMES_VERSION}`, ...hfRenderArgs], { cwd: introDir });
+}
+const hfRenderBodyArgs = ["render", "--low-memory-mode", "--quality", "standard", "--protocol-timeout", "1800000", "--workers", hfWorkers, "--output", "renders/body.mp4"];
+if (fs.existsSync(LOCAL_HYPERFRAMES_CLI)) {
+  run("node", [LOCAL_HYPERFRAMES_CLI, ...hfRenderBodyArgs], { cwd: bodyDir });
+} else {
+  run("npx", ["--yes", `hyperframes@${HYPERFRAMES_VERSION}`, ...hfRenderBodyArgs], { cwd: bodyDir });
+}
+
+run("ffmpeg", [
+  "-y",
+  "-i",
+  introVideo,
+  "-i",
+  bodyVideo,
+  "-i",
+  introStoryVoice,
+  "-i",
+  bodyStoryVoice,
+  "-stream_loop",
+  "-1",
+  "-i",
+  bgmPath,
+  "-i",
+  INTRO_SCROLL_SFX_PATH,
+  "-i",
+  INTRO_WATER_SFX_PATH,
+  "-filter_complex",
+  [
+    `[0:v]trim=0:${INTRO_TRIM_SECONDS},setpts=PTS-STARTPTS[v0]`,
+    `[1:v]trim=0:${bodyDuration},setpts=PTS-STARTPTS[v1]`,
+    "[v0][v1]concat=n=2:v=1:a=0[v]",
+    "[2:a]asetpts=PTS-STARTPTS,aresample=48000,volume=1.0[introa]",
+    `[3:a]asetpts=PTS-STARTPTS,aresample=48000,adelay=${INTRO_OFFSET_MS}|${INTRO_OFFSET_MS},volume=1.0[bodya]`,
+    `[4:a]atrim=0:${Number((finalDuration - INTRO_TRIM_SECONDS).toFixed(2))},asetpts=PTS-STARTPTS,aresample=48000,adelay=${INTRO_OFFSET_MS}|${INTRO_OFFSET_MS},volume=${FINAL_BGM_VOLUME},afade=t=in:st=0:d=0.5[bgm]`,
+    `[5:a]atrim=0:${introScrollSfxDuration},asetpts=PTS-STARTPTS,aresample=48000,volume=${INTRO_SCROLL_SFX_VOLUME},afade=t=in:st=0:d=0.01,afade=t=out:st=${introScrollSfxFadeOutStart}:d=${INTRO_SCROLL_SFX_FADE_OUT_SECONDS},adelay=${introScrollSfxDelayMs}|${introScrollSfxDelayMs}[scrollsfx]`,
+    `[6:a]atrim=0:1.06,asetpts=PTS-STARTPTS,aresample=48000,volume=${INTRO_WATER_SFX_VOLUME},adelay=${Math.round(INTRO_WATER_SFX_START_SECONDS * 1000)}|${Math.round(INTRO_WATER_SFX_START_SECONDS * 1000)}[watersfx]`,
+    "[introa][bodya][bgm][scrollsfx][watersfx]amix=inputs=5:duration=longest:dropout_transition=0:normalize=0,alimiter=limit=0.95,loudnorm=I=-14.0:TP=-1.0:LRA=7.0,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[a]",
+  ].join(";"),
+  "-map",
+  "[v]",
+  "-map",
+  "[a]",
+  "-c:v",
+  "libx264",
+  "-pix_fmt",
+  "yuv420p",
+  "-profile:v",
+  "high",
+  "-level",
+  "4.1",
+  "-c:a",
+  "aac",
+  "-b:a",
+  "192k",
+  "-movflags",
+  "+faststart",
+  "-shortest",
+  candidateOutputPath,
+]);
+
+probeVideo(candidateOutputPath);
+activateFinalRender(candidateOutputPath, outputPath);
+try {
+  fs.rmSync(previewDir, { recursive: true, force: true });
+} catch (e) {
+  // best-effort cleanup; sandbox safe-delete guards may block bulk rm after a successful render
+}
+console.log(outputPath);

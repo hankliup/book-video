@@ -1,0 +1,25 @@
+{
+  "query": "微信读书 /store/search：贝奥武甫（2026-10-10，用户指定本期书目）",
+  "candidates": [
+    {
+      "status": "selected",
+      "priority": "high",
+      "display_title": "贝奥武甫",
+      "source_title": "贝奥武甫",
+      "author": "冯象 译注",
+      "translator": "",
+      "source_channel": "weread",
+      "source_book_id": "3300132563",
+      "category": "文学-外国文学",
+      "rating": "855",
+      "rating_count": "64",
+      "reading_count": "21",
+      "resonance_score": "high",
+      "emotion_theme": "英雄与民族之死;船葬与火葬;荣誉;命运;衰老;背叛;一个时代的终结",
+      "selection_reason": "用户指定本期书目。冯象译注《贝奥武甫》，浙江文艺出版社有限公司2025-01（ISBN 9787533977078），微信读书推荐值855（好评58/中评4/差评2），64人点评、52条热门划线。冯象1987年起译，2025增订版译文修订三遍、评注扩充四倍，是中文世界公认首选译本。同检索另见贝尔武夫（英语文库）、Beowulf英文版、美绘少年版改写等混淆项，均非本期版本。",
+      "video_project": "episodes/贝奥武甫",
+      "notes": "研究真源为微信读书网关：/store/search 命中冯象译注版一个正本；/book/info 核实出版社、ISBN、出版时间与评分；/book/bestbookmarks 取52条热门划线中前20条（最高80人）；/review/list 取36条公开点评。高频划线与点评集中在：该来必来任随命运、人运数不完全凭勇敢、船葬首尾呼应、三次搏斗框架、冯象注的密度、难读点（叙事非直线）。内容为热门划线与点评的独立改写，不复制原句长段。",
+      "source_url": "https://weread.qq.com/book-detail?type=1&v=92532b60813ab9a48g013a19"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+[
+  {
+    "name": "atmosphere-1",
+    "photo_id": 11481793,
+    "photographer": "Andy Light",
+    "url": "https://www.pexels.com/zh-cn/photo/11481793/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/11481793/",
+    "image_url": "https://images.pexels.com/photos/11481793/pexels-photo-11481793.jpeg",
+    "pixels": "3456x5184",
+    "avg_color": "#494947",
+    "alt": "冬季冰霜窗户上形成复杂图案的雪花细节影像。",
+    "query": "frost flower on window pane from inside empty room winter daylight",
+    "note": "钩子第一拍：从屋里看那扇结了霜的窗——左侧一整条黑窗框，玻璃上全是霜花，外面只剩一点暖光。正文 26 层里没有一张室内结霜窗，也没有雪松雾景（避免与正文 atmosphere-25 同图同母题）（Pexels #11481793）",
+    "dir": "images-hook",
+    "segment": "hook",
+    "replaces_photo_id": 35577357
+  },
+  {
+    "name": "atmosphere-2",
+    "photo_id": 30352742,
+    "photographer": "Noland Live",
+    "url": "https://www.pexels.com/zh-cn/photo/30352742/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/30352742/",
+    "image_url": "https://images.pexels.com/photos/30352742/pexels-photo-30352742.jpeg",
+    "pixels": "4672x7008",
+    "avg_color": "#9A9FA2",
+    "alt": "清晨的雾气笼罩下，湖面宁静，前景中的芦苇散发出平和与安详。",
+    "query": "frozen lake bare trees winter mist at dusk",
+    "note": "钩子第二拍：封死的湖面，雾吃掉对岸，前景一丛枯芦苇——「结冰不动」说得最准的一帧（Pexels #30352742）",
+    "dir": "images-hook",
+    "segment": "hook"
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "_comment": "正文段常驻《书名》+ 作者层的字体真源。用户 2026-10-06 要求「优化正文部分视频中的书籍字体，改为微软雅黑」；这台 Mac 上没有装微软雅黑，也没有可合法取得的分发渠道（系统字体不许打包进仓库），所以确认改用苹方-简 PingFang SC，并把雅黑留在优先级第一位——装了雅黑的机器自动走雅黑，两边都只从这份 JSON 取。Python 侧 scripts/lib/title_font.py、JS 侧 scripts/lib/title-font.mjs，两条渲染路径都不许自己写 font-family。",
+  "scope": "body-book-mark",
+  "_scope_comment": "只管正文那两层（书名 + 作者）。它**不管**：字幕（render_scene_map_template_fallback.py 的 FONT / create-episode-preview.mjs 的 .caption）、共享片头结果页的 .page-title/.page-author、封面 make_episode_cover.py 的 COVER_FONT。前一个是用户的原话范围就到「书籍字体」为止，56px 白字换 face 会改动字幕边界压测量的那块墨迹；后一个是用户 2026-10-05 裁决「恢复原来的固定开场白效果」，片头按原样交付，字体也算它的观感。",
+  "priority": [
+    {
+      "family": "Microsoft YaHei",
+      "style": "Regular",
+      "css_names": ["Microsoft YaHei", "微软雅黑"],
+      "postscript": ["MicrosoftYaHei", "Microsoft YaHei"],
+      "file_globs": [
+        "/System/Library/Fonts/Supplemental/Microsoft YaHei.ttf",
+        "/System/Library/Fonts/Supplemental/msyh.ttc",
+        "/Library/Fonts/Microsoft YaHei.ttf",
+        "/Library/Fonts/msyh.ttc",
+        "~/Library/Fonts/Microsoft YaHei.ttf",
+        "~/Library/Fonts/msyh.ttc"
+      ]
+    },
+    {
+      "family": "PingFang SC",
+      "style": "Medium",
+      "css_names": ["PingFang SC", "苹方-简"],
+      "postscript": ["PingFangSC-Medium"],
+      "file_globs": [
+        "/System/Library/Fonts/PingFang.ttc",
+        "/System/Library/Fonts/Supplemental/PingFang.ttc",
+        "/System/Library/AssetsV2/com_apple_MobileAsset_Font*/**/PingFang.ttc",
+        "/Library/Fonts/PingFang.ttc",
+        "~/Library/Fonts/PingFang.ttc"
+      ]
+    }
+  ],
+  "fallback": {
+    "family": "STHeiti",
+    "style": "Medium",
+    "css_names": ["STHeiti", "Hiragino Sans GB"],
+    "file": "/System/Library/Fonts/STHeiti Medium.ttc",
+    "index": 1,
+    "_comment": "本机两个 priority 家族都不在时才有它兜底，且门禁会把它报成 ❌ 回退（用户明确要的就是那两家）。index=1 不是魔法数：STHeiti Medium.ttc 的 index 0 是黑体-繁，会把简体的「書」这类字形换成繁体（AGENTS.md 封面那条同一个坑），所以这里按 face 名校验、不许凭记忆填。"
+  },
+  "css_font_weight": 500,
+  "_css_weight_comment": "旧 CSS 在 .book-title/.book-author 上写 font-weight:900，而 face 本身就是 Medium：浏览器会**合成**粗体，Pillow 侧不会——同一份文案在两条渲染路径上字重不同（PIL 画的才是本机交付的像素）。500 让两边都取真实的 Medium face，不再有一侧假粗。",
+  "forbidden_family_markers": ["TC", "HK", "MO", "繁", "港", "澳"],
+  "_markers_comment": "解析到的 family 名里出现任何一个就是拿繁体/港体face 排简体文案，直接判红。",
+  "retired_family": "STHeiti",
+  "_retired_comment": "改造前正文书名层用的家族。字体验收门禁用它做反向对照：夹具里把字体换回它，门禁必须翻红，否则「字体真的上屏了」这句绿话没有任何含义。"
+}

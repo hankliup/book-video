@@ -1,0 +1,32 @@
+[
+  {
+    "name": "atmosphere-1",
+    "photo_id": 31357536,
+    "photographer": "Madzery Ma",
+    "url": "https://www.pexels.com/zh-cn/photo/31357536/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/31357536/",
+    "image_url": "https://images.pexels.com/photos/31357536/pexels-photo-31357536.jpeg",
+    "pixels": "3368x6000",
+    "avg_color": "#D0D3C8",
+    "alt": "明亮简约的室内走廊，配有窗户和栏杆，展示现代建筑。",
+    "query": "sterile white empty corridor minimal bright",
+    "note": "钩子第一拍：让你一直舒服的东西——什么都不缺的明亮走廊（现代建筑、无人无字）",
+    "dir": "images-hook",
+    "segment": "hook"
+  },
+  {
+    "name": "atmosphere-2",
+    "photo_id": 803908,
+    "photographer": "Monica Silvestre",
+    "url": "https://www.pexels.com/zh-cn/photo/803908/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/803908/",
+    "image_url": "https://images.pexels.com/photos/803908/pexels-photo-803908.jpeg",
+    "pixels": "3024x4032",
+    "avg_color": "#77746F",
+    "alt": "宽敞的空房间，现代设计，配有大型窗帘和瓷砖地板。",
+    "query": "minimal empty room single ceiling light cold white no furniture night",
+    "note": "钩子第二拍：我那个不吵的晚上——空荡房间与窗帘，只有顶灯",
+    "dir": "images-hook",
+    "segment": "hook"
+  }
+]

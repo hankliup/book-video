@@ -1,0 +1,38 @@
+[
+  {
+    "name": "atmosphere-1",
+    "photo_id": 9125306,
+    "photographer": "Iveth Quezada Encalada",
+    "url": "https://www.pexels.com/zh-cn/photo/9125306/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/9125306/",
+    "image_url": "https://images.pexels.com/photos/9125306/pexels-photo-9125306.jpeg",
+    "pixels": "2592x3739",
+    "avg_color": "#32353E",
+    "alt": "宁静房间的氛围，带有木百叶窗和温暖的窗帘。",
+    "query": "night wooden shutters interior",
+    "note": "暗房一扇窗光：喊醒别人之前，先承认自己已经醒了",
+    "dir": "images-hook",
+    "segment": "hook",
+    "crop_box": [
+      0.06,
+      0,
+      1,
+      0.85
+    ]
+  },
+  {
+    "name": "atmosphere-2",
+    "photo_id": 10957564,
+    "photographer": "Navin Ramaswaran",
+    "url": "https://www.pexels.com/zh-cn/photo/10957564/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/10957564/",
+    "image_url": "https://images.pexels.com/photos/10957564/pexels-photo-10957564.jpeg",
+    "pixels": "4672x7008",
+    "avg_color": "#1A1B16",
+    "alt": "一盏发光的复古油灯，配有绿色玻璃灯罩，在黑暗的房间中投射出温暖的光线，营造出舒适的氛围。",
+    "query": "empty wooden desk oil lamp night",
+    "note": "旧木桌上的油灯：该我开口的那三次，灯一直亮着",
+    "dir": "images-hook",
+    "segment": "hook"
+  }
+]

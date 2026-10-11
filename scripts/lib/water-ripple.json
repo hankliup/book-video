@@ -1,0 +1,13 @@
+{
+  "$comment": "水波「音效—画面」同窗常量的唯一真源。Python 侧 scripts/lib/water_ripple.py、JS 侧 scripts/lib/water-ripple.mjs、门禁 scripts/check-water-ripple.py 都读这份文件；任何渲染脚本里再出现 0.32 / 1.06 这样的秒数字面量都算违规（改一处忘改另一处，就会变成「有水声没水波」或「水波比声音早半秒」这种没人报错的错窗）。",
+  "$rule": "水波音效绝不是纯音频：assets/sfx/water.mp3 在片头→正文切点后 offsetSeconds 秒起播、持续 durationSeconds 秒，同一窗口内背景层必须出现自中心向外扩散的可见涟漪。涟漪只作用在背景层，书名层与字幕层在其后绘制。",
+  "offsetSeconds": 0.32,
+  "durationSeconds": 1.06,
+  "reason": {
+    "offsetSeconds": "切点瞬间画面刚从结果页定格进入正文，立刻起涟漪会读成「跳帧」；晚 0.32s 起播，观感才是「落进水里」。",
+    "durationSeconds": "water.mp3 的有效能量集中在前 1.06s，之后是尾巴；涟漪按同样长度收尾，声音停了画面还在晃就会被读成故障。"
+  },
+  "exempt": [
+    "片头结果页自身的 SVG feTurbulence 水纹（scripts/create-episode-preview.mjs 的 #water-ripple），那是片头内建视觉，不承担切点水声"
+  ]
+}

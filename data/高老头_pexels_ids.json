@@ -1,0 +1,32 @@
+[
+  {
+    "name": "atmosphere-1",
+    "photo_id": 13861698,
+    "photographer": "Mavi Ay Durağı",
+    "url": "https://www.pexels.com/zh-cn/photo/13861698/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/13861698/",
+    "image_url": "https://images.pexels.com/photos/13861698/pexels-photo-13861698.jpeg",
+    "pixels": "3456x5184",
+    "avg_color": "#332115",
+    "alt": "展现拉脱维亚里加一间奢华的复古房间，窗边有一把扶手椅和优雅的窗帘。",
+    "query": "empty chair beside curtained window in dark old room dust light",
+    "note": "钩子第一拍：留下的那把空椅——暗木护墙板的房里一把镀金扶手椅空着，圆桌上留着一只酒杯，白窗帘被风吸进来。1819 年巴黎的公寓，无人无字无现代物（Pexels #13861698）",
+    "dir": "images-hook",
+    "segment": "hook"
+  },
+  {
+    "name": "atmosphere-2",
+    "photo_id": 19866369,
+    "photographer": "Sami TÜRK",
+    "url": "https://www.pexels.com/zh-cn/photo/19866369/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/19866369/",
+    "image_url": "https://images.pexels.com/photos/19866369/pexels-photo-19866369.jpeg",
+    "pixels": "4160x6240",
+    "avg_color": "#574423",
+    "alt": "探索一个被遗弃的楼梯的质朴魅力，石阶和铁栏杆捕捉到衰退的本质。",
+    "query": "old stone staircase interior empty morning light",
+    "note": "钩子第二拍：谁都不上楼的那段梯——石阶磨损、铁栏杆生锈、墙皮剥落露出砖，暖黄光从上面下来（Pexels #19866369；替换上一轮选的 #6198797，那张主体是一堵石墙、楼梯读不出来且电平偏暗）",
+    "dir": "images-hook",
+    "segment": "hook"
+  }
+]

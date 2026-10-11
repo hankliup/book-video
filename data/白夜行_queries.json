@@ -1,0 +1,16 @@
+[
+  {"query": "white bright horizon walking into daylight sunrise no sun", "label": "结果页定格：纸上那两个手牵手的小孩，一个也没有走出来", "beat": "result-bridge", "rows": "153-154"},
+  {"query": "unfinished concrete building construction site night Osaka Japan 1970s", "label": "一九七三年，大阪，天亮的时候，一栋没盖完的楼里", "beat": "b1", "rows": "8-16"},
+  {"query": "police investigation old Japanese apartment building crime scene night", "label": "警察问了一下午，两个人的回答像对好的", "beat": "b2", "rows": "17-24"},
+  {"query": "old Japanese library long wooden table reading books desk lamp", "label": "他在同一间图书馆里待过，书里有一张剪纸", "beat": "b3", "rows": "25-32"},
+  {"query": "elegant Japanese woman shop owner changing over time 1970s 1980s", "label": "她越长越得体，见人就先笑，谁都挑不出她的错", "beat": "b4", "rows": "33-44"},
+  {"query": "bubble era Japan 1980s city street neon signs shopfronts night", "label": "那几年正赶上泡沫，街上的店换了一茬又一茬", "beat": "b5", "rows": "45-49"},
+  {"query": "small boy walking away alone Japanese alley night disappearing", "label": "那个男孩再没有出现过，连一张照片都找不到", "beat": "b6", "rows": "54-58"},
+  {"query": "key ring small bell detail close up metallic gleam", "label": "一个绣着缩写的布袋，一串钥匙上的小铃铛", "beat": "b7", "rows": "63-66"},
+  {"query": "dark room figure working silently in shadows background", "label": "另有一个人一直藏在暗处，没有正经工作", "beat": "b8", "rows": "73-78"},
+  {"query": "old Japanese detective searching files alone night office", "label": "只有一个警察还在查，别人都说这案子早结了", "beat": "b9", "rows": "87-90"},
+  {"query": "shrimp goby fish ocean marine creature partnership mutualism", "label": "海里有两种东西，一种叫枪虾，一种叫虾虎鱼", "beat": "b10", "rows": "94-102"},
+  {"query": "bright white daylight snow field no sun pale light Japanese", "label": "白天亮得能看清每个人的脸，可天上没有太阳", "beat": "b11", "rows": "106-112"},
+  {"query": "person pouring drink glass hand table dinner Japanese restaurant", "label": "他给你倒酒，你连那句谢谢都没说出口", "beat": "b12", "rows": "119-121"},
+  {"query": "person walking into bright white daylight horizon light", "label": "她往前走，走进白天里，那条路亮堂得很", "beat": "b13", "rows": "151-152"}
+]

@@ -1,0 +1,55 @@
+{
+  "candidates": [
+    {
+      "status": "selected",
+      "priority": "high",
+      "display_title": "德米安",
+      "source_title": "德米安（果麦经典）",
+      "author": "[德]赫尔曼·黑塞",
+      "source_channel": "weread",
+      "source_book_id": "31503084",
+      "category": "精品小说-社会小说",
+      "rating": 891,
+      "rating_count": 4975,
+      "highlight_top_count": 7777,
+      "reviews_count": 3144,
+      "resonance_score": "high",
+      "emotion_theme": "心里藏着一件不敢说的事;两个世界;被人一眼看穿;失足与命运;成为自己",
+      "selection_reason": "用户指定本期书目。黑塞1919年作品，辛克莱的自传体成长；果麦经典姜乙译本（与已交付《悉达多》《精神与爱欲》同一译者同一厂牌），微信读书891分、4975人评分、653条热门划线、3144条点评；热门划线最高一条7777人：我所想望的，无非是试着依我自发的本性去生活",
+      "video_project": "德米安",
+      "notes": "译者姜乙；天津人民出版社2020-05-01；ISBN 9787201159096"
+    },
+    {
+      "status": "candidate",
+      "priority": "normal",
+      "display_title": "德米安",
+      "source_title": "德米安",
+      "author": "[德]赫尔曼·黑塞",
+      "source_channel": "weread",
+      "source_book_id": "3300157310",
+      "category": "文学-外国文学",
+      "rating": 884,
+      "rating_count": 2072,
+      "resonance_score": "high",
+      "emotion_theme": "心里藏着一件不敢说的事;两个世界;被人一眼看穿;失足与命运;成为自己",
+      "selection_reason": "2025年新译本（李蒙漪），评分884但评分人数仅2072，无出版社与ISBN信息",
+      "notes": "译者李蒙漪；2025-08-13；ISBN "
+    },
+    {
+      "status": "candidate",
+      "priority": "normal",
+      "display_title": "德米安:彷徨少年时",
+      "source_title": "德米安：彷徨少年时（黑塞精选集）",
+      "author": "赫尔曼•黑塞",
+      "source_channel": "weread",
+      "source_book_id": "3300026591",
+      "category": "精品小说-社会小说",
+      "rating": 896,
+      "rating_count": 6289,
+      "resonance_score": "high",
+      "emotion_theme": "心里藏着一件不敢说的事;两个世界;被人一眼看穿;失足与命运;成为自己",
+      "selection_reason": "黑塞精选集本，李贻琼译，译林出版社2022；评分896、6289人（样本最大），但译名体系与已交付的黑塞各期不一致（辛克莱尔/纳尔奇思）",
+      "notes": "译者李贻琼；译林出版社2022-08-01；ISBN 9787544791083"
+    }
+  ]
+}

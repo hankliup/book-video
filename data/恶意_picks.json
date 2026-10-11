@@ -1,0 +1,110 @@
+[
+  {
+    "name": "result-bridge",
+    "sheet": "tmp/px-恶意/sheet1.png",
+    "cell": 7,
+    "note": "片头定格页：夜里整栋楼只亮着一扇窗"
+  },
+  {
+    "name": "atmosphere-1",
+    "sheet": "tmp/px-恶意/sheet1.png",
+    "cell": 13,
+    "note": "出国前夜：雨窗后的城市灯火"
+  },
+  {
+    "name": "atmosphere-2",
+    "sheet": "tmp/px-恶意/sheet1.png",
+    "cell": 29,
+    "note": "凶手的手记：打字机按键特写，一束侧光"
+  },
+  {
+    "name": "atmosphere-3",
+    "sheet": "tmp/px-恶意/sheet1.png",
+    "cell": 48,
+    "note": "只有一栏是空的：方格纸上被撕掉的一条"
+  },
+  {
+    "name": "atmosphere-4",
+    "sheet": "tmp/px-恶意/sheet1.png",
+    "cell": 18,
+    "note": "没结案的屋子：暗房间里一把空椅和一盏落地灯"
+  },
+  {
+    "name": "atmosphere-5",
+    "sheet": "tmp/px-恶意/sheet1.png",
+    "cell": 35,
+    "note": "邻居的那只猫：夜里巷口湿地上坐着的猫"
+  },
+  {
+    "name": "atmosphere-6",
+    "sheet": "tmp/px-恶意/sheet1.png",
+    "cell": 44,
+    "note": "三四页与二十页：黑桌上一叠空白稿纸"
+  },
+  {
+    "name": "atmosphere-7",
+    "sheet": "tmp/px-恶意/sheet2.png",
+    "cell": 4,
+    "note": "一起走去学校的清晨：雾里的小路与前面的人影"
+  },
+  {
+    "name": "atmosphere-8",
+    "sheet": "tmp/px-恶意/sheet2.png",
+    "cell": 10,
+    "note": "中学的操场：傍晚空球场和泛光灯"
+  },
+  {
+    "name": "atmosphere-9",
+    "sheet": "tmp/px-恶意/sheet2.png",
+    "cell": 20,
+    "note": "讲台与空课桌：黑白空教室，一排排课桌"
+  },
+  {
+    "name": "atmosphere-10",
+    "sheet": "tmp/px-恶意/sheet2.png",
+    "cell": 36,
+    "note": "相对的两扇窗：黑外墙上的两扇小窗"
+  },
+  {
+    "name": "atmosphere-11",
+    "sheet": "tmp/px-恶意/sheet2.png",
+    "cell": 42,
+    "note": "名声上的一块脏：白纸上溅开的墨"
+  },
+  {
+    "name": "atmosphere-12",
+    "sheet": "tmp/px-恶意/sheet2.png",
+    "cell": 54,
+    "note": "熟人升职的那个夜里：暗墙上窗影和一只手"
+  },
+  {
+    "name": "atmosphere-13",
+    "sheet": "tmp/px-恶意/sheet3.png",
+    "cell": 6,
+    "note": "恶意是怎么长起来的：混凝土上的裂缝和霉斑"
+  },
+  {
+    "name": "atmosphere-14",
+    "sheet": "tmp/px-恶意/sheet3.png",
+    "cell": 14,
+    "note": "那个门口：一片黑里只有一扇亮着的门"
+  },
+  {
+    "name": "atmosphere-15",
+    "sheet": "tmp/px-恶意/sheet3.png",
+    "cell": 19,
+    "note": "找不到源头：雾里的松林小路"
+  },
+  {
+    "name": "hook-1",
+    "sheet": "tmp/px-恶意/sheet3.png",
+    "cell": 27,
+    "note": "钩子1：夜里人群的后脑勺，没有脸"
+  },
+  {
+    "name": "hook-2",
+    "sheet": "tmp/px-恶意/sheet3.png",
+    "cell": 38,
+    "note": "钩子2：雨夜车窗上的冷光"
+  }
+]

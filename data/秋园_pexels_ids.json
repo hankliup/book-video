@@ -1,0 +1,32 @@
+[
+  {
+    "name": "atmosphere-24",
+    "photo_id": 6474375,
+    "dir": "images-hook",
+    "segment": "hook",
+    "photographer": "Eva Bronzini",
+    "url": "https://www.pexels.com/zh-cn/photo/6474375/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/6474375/",
+    "image_url": "https://images.pexels.com/photos/6474375/pexels-photo-6474375.jpeg",
+    "pixels": "3712x5568",
+    "avg_color": "#515C67",
+    "alt": "这是一张极简风格的图像，展示了一个空的黑色陶瓷碗放在一个有质感的深色表面上，唤起宁静与简约。",
+    "query": "single empty bowl rough wooden table dark",
+    "note": "钩子第 1 句「把人逼到想死的，从来不只是穷」：一只空碗摆在冷灰色的石面上，四周压到近黑——画面先替观众说出「穷」，口播把这个词摘掉"
+  },
+  {
+    "name": "atmosphere-25",
+    "photo_id": 30926176,
+    "dir": "images-hook",
+    "segment": "hook",
+    "photographer": "Sueda   Güzeldere",
+    "url": "https://www.pexels.com/zh-cn/photo/30926176/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/30926176/",
+    "image_url": "https://images.pexels.com/photos/30926176/pexels-photo-30926176.jpeg",
+    "pixels": "3941x5911",
+    "avg_color": "#90765D",
+    "alt": "双手在木板上准备面团的特写，展示传统的面包制作。",
+    "query": "old hands kneading dough wooden board",
+    "note": "钩子第 2 句「我读完那天，把家里还在硬撑的那个人想了一遍」：一双按在面团上的老人手，不露脸"
+  }
+]

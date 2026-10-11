@@ -1,0 +1,20 @@
+[
+  { "name": "result-bridge", "segment": "body", "sheet": "tmp/px-德米安/sheet1.png", "cell": 20, "note": "片头定格页：黄昏的老石巷，暗处只亮着一扇窗，中央留给书名与作者（换掉 33313572：西里尔文公告与涂鸦）" },
+  { "name": "atmosphere-1", "segment": "body", "sheet": "tmp/px-德米安/sheet1.png", "cell": 11, "note": "b1 屋里的世界：灯下的旧房间（正文 2-6）" },
+  { "name": "atmosphere-2", "segment": "body", "sheet": "tmp/px-德米安/sheet4.png", "cell": 0, "note": "b2 屋外的世界：夜里的鹅卵石暗巷，空无一人（正文 7-12，换掉 15651888：禁左转交通牌与卫星锅）" },
+  { "name": "atmosphere-3", "segment": "body", "sheet": "tmp/px-德米安/sheet6.png", "cell": 4, "note": "b3 街角那个人：砖墙上的少年影子（正文 13-18，换掉 3643182：短袖运动鞋与双黄线；备选 20872468 屋脊上有两根电视天线）" },
+  { "name": "atmosphere-4", "segment": "body", "sheet": "tmp/px-德米安/sheet1.png", "cell": 37, "note": "b4 放学后的门房：等一个人的那扇门（正文 19-24）" },
+  { "name": "atmosphere-5", "segment": "body", "sheet": "tmp/px-德米安/sheet1.png", "cell": 41, "note": "b5 夜里坐在河边的台阶上（正文 25-31，换掉 11971269：波尔图霓虹招牌与现代路灯）" },
+  { "name": "atmosphere-6", "segment": "body", "sheet": "tmp/px-德米安/sheet2.png", "cell": 2, "note": "b6 转学生：照进旧教室的那束光（正文 32-37）" },
+  { "name": "atmosphere-7", "segment": "body", "sheet": "tmp/px-德米安/sheet4.png", "cell": 47, "note": "b7 街口对峙：雾里两个被隔开的身影（正文 38-44，换掉 22590601：现代步道与外套、整体过亮）" },
+  { "name": "atmosphere-8", "segment": "body", "sheet": "tmp/px-德米安/sheet2.png", "cell": 21, "note": "b8 额上的记号：石头上风化的刻痕（正文 45-50，换掉 31837414：亚美尼亚十字石与亚美尼亚文）" },
+  { "name": "atmosphere-9", "segment": "body", "sheet": "tmp/px-德米安/sheet2.png", "cell": 25, "note": "b9 鸟要出壳：裂开的蛋壳（正文 51-56）" },
+  { "name": "atmosphere-10", "segment": "body", "sheet": "tmp/px-德米安/sheet2.png", "cell": 34, "note": "b10 在教堂里不敢闭眼：空长椅与一线光（正文 57-62，换掉 20271168：现代参观者与灯具围栏）" },
+  { "name": "atmosphere-11", "segment": "body", "sheet": "tmp/px-德米安/sheet2.png", "cell": 42, "note": "b11 后墙上那张脸：风化的石刻面孔（正文 63-68，换掉 35015703：只剩一团看不清的青苔绿）" },
+  { "name": "atmosphere-12", "segment": "body", "sheet": "tmp/px-德米安/sheet3.png", "cell": 1, "note": "b12 引路人：烛下翻开的旧书（正文 69-74）" },
+  { "name": "atmosphere-13", "segment": "body", "sheet": "tmp/px-德米安/sheet3.png", "cell": 10, "note": "b13 只想远远看的那个人：夜里亮着的窗帘（正文 75-80）" },
+  { "name": "atmosphere-14", "segment": "body", "sheet": "tmp/px-德米安/sheet3.png", "cell": 22, "note": "b14 战争与伤口：雾里的铁轨（正文 81-88）" },
+  { "name": "atmosphere-15", "segment": "body", "sheet": "tmp/px-德米安/sheet3.png", "cell": 26, "note": "b15 通往自己的路：雪地上一串脚印（正文 89-93）" },
+  { "name": "atmosphere-1", "segment": "hook", "sheet": "tmp/px-德米安/sheet3.png", "cell": 33, "note": "h1 钩子金句：清晨独自上路（钩子 1）" },
+  { "name": "atmosphere-2", "segment": "hook", "sheet": "tmp/px-德米安/sheet3.png", "cell": 43, "note": "h2 钩子落差：战场上的铁丝网（钩子 2）" }
+]

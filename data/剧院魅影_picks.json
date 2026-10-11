@@ -1,0 +1,154 @@
+[
+  {
+    "name": "atmosphere-1",
+    "beat": "tmp/ywy-cand/h01",
+    "cell": 2,
+    "note": "钩子第1拍：剧院枝形吊灯特写",
+    "dir": "images-hook"
+  },
+  {
+    "name": "atmosphere-2",
+    "beat": "tmp/ywy-cand/h03",
+    "cell": 0,
+    "note": "钩子第2拍：深色木桌上的威尼斯面具（原选 #6213719 与《贝姨》正文撞图，换）",
+    "dir": "images-hook"
+  },
+  {
+    "name": "result-bridge",
+    "beat": "tmp/ywy-cand/b02",
+    "cell": 0,
+    "note": "L0 static · 行1 片头结果页：无人编号红丝绒座席"
+  },
+  {
+    "name": "atmosphere-1",
+    "beat": "tmp/ywy-cand/b01",
+    "cell": 1,
+    "note": "L1 · 行2-4 枝形吊灯照亮剧院"
+  },
+  {
+    "name": "atmosphere-2",
+    "beat": "tmp/ywy-cand/b01",
+    "cell": 4,
+    "note": "L2 · 行5-8 奢华剧院内部，金红交织"
+  },
+  {
+    "name": "atmosphere-3",
+    "beat": "tmp/ywy-cand/b03",
+    "cell": 1,
+    "note": "L3 · 行9-10 石头走廊，不祥氛围"
+  },
+  {
+    "name": "atmosphere-4",
+    "beat": "tmp/ywy-cand/b04",
+    "cell": 3,
+    "note": "L4 · 行11-12 废弃房间里的破旧钢琴"
+  },
+  {
+    "name": "atmosphere-5",
+    "beat": "tmp/ywy-cand/b16",
+    "cell": 7,
+    "note": "L5 · 行13-14 古老哥特石走廊（地穴）"
+  },
+  {
+    "name": "atmosphere-6",
+    "beat": "tmp/ywy-cand/b05",
+    "cell": 1,
+    "note": "L6 · 行15-17 威尼斯面具特写"
+  },
+  {
+    "name": "atmosphere-7",
+    "beat": "tmp/ywy-cand/b06",
+    "cell": 0,
+    "note": "L7 · 行18-21 夜马戏团帐幕与灯串"
+  },
+  {
+    "name": "atmosphere-8",
+    "beat": "tmp/ywy-cand/b15",
+    "cell": 1,
+    "note": "L8 · 行22-23 风化的旧木门铁栅窗"
+  },
+  {
+    "name": "atmosphere-9",
+    "beat": "tmp/ywy-cand/b07",
+    "cell": 3,
+    "note": "L9 · 行24-26 古典镜面映吊灯（站在这侧看得见那人）"
+  },
+  {
+    "name": "atmosphere-10",
+    "beat": "tmp/ywy-cand/b11",
+    "cell": 2,
+    "note": "L10 · 行27-28 钢琴键特写"
+  },
+  {
+    "name": "atmosphere-11",
+    "beat": "tmp/ywy-cand/b09",
+    "cell": 5,
+    "note": "L11 · 行29-31 深红丝绒剧院幕布"
+  },
+  {
+    "name": "atmosphere-12",
+    "beat": "tmp/ywy-cand/b09",
+    "cell": 2,
+    "note": "L12 · 行32-34 歌剧院空观众厅"
+  },
+  {
+    "name": "atmosphere-13",
+    "beat": "tmp/ywy-cand/b10",
+    "cell": 4,
+    "note": "L13 · 行35-40 单束聚光灯与黑暗背景"
+  },
+  {
+    "name": "atmosphere-14",
+    "beat": "tmp/ywy-cand/b17",
+    "cell": 10,
+    "note": "L14 · 行41-43 木橱里一排红礼服"
+  },
+  {
+    "name": "atmosphere-15",
+    "beat": "tmp/ywy-cand/b08",
+    "cell": 0,
+    "note": "L15 · 行44-46 烛光映在水面（地下湖）"
+  },
+  {
+    "name": "atmosphere-16",
+    "beat": "tmp/ywy-cand/b18",
+    "cell": 11,
+    "note": "L16 · 行47-49 暗水中一团浅晕，像一张脸"
+  },
+  {
+    "name": "atmosphere-17",
+    "beat": "tmp/ywy-cand/b08",
+    "cell": 1,
+    "note": "L17 · 行50-54 两支烛火在黑暗中"
+  },
+  {
+    "name": "atmosphere-18",
+    "beat": "tmp/ywy-cand/b19",
+    "cell": 3,
+    "note": "L18 · 行55-60 深廊尽头一道暖光门洞"
+  },
+  {
+    "name": "atmosphere-19",
+    "beat": "tmp/ywy-cand/b20",
+    "cell": 5,
+    "note": "L19 · 行61-66 威尼斯面具特写，紫羽"
+  },
+  {
+    "name": "atmosphere-20",
+    "beat": "tmp/ywy-cand/b12",
+    "cell": 0,
+    "note": "L20 · 行67-70 旧书、蜡烛与灯的书桌"
+  },
+  {
+    "name": "atmosphere-21",
+    "beat": "tmp/ywy-cand/b13",
+    "cell": 1,
+    "note": "L21 · 行71-74 黑暗狭窄走廊，尽头门缝有光"
+  },
+  {
+    "name": "atmosphere-22",
+    "beat": "tmp/ywy-cand/b14",
+    "cell": 0,
+    "note": "L22 · 行75-77 古董缝纫机与昏暗房间的镜子"
+  }
+]

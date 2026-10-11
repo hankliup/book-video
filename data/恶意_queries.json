@@ -1,0 +1,97 @@
+[
+  {
+    "beat": "result-bridge",
+    "zh": "夜里整栋楼唯一亮着的那扇窗",
+    "query": "night building single lit window dark"
+  },
+  {
+    "beat": "b1",
+    "zh": "出国前夜的公寓窗口",
+    "query": "apartment window night city rain curtained"
+  },
+  {
+    "beat": "b2",
+    "zh": "没结案的屋子",
+    "query": "empty chair dark room single lamp"
+  },
+  {
+    "beat": "b3",
+    "zh": "凶手的手记",
+    "query": "old typewriter dark moody manuscript paper"
+  },
+  {
+    "beat": "b4",
+    "zh": "邻居的那只猫",
+    "query": "black cat silhouette wall night streetlight"
+  },
+  {
+    "beat": "b5",
+    "zh": "三四页与二十页",
+    "query": "stack of blank white paper dark desk"
+  },
+  {
+    "beat": "b6",
+    "zh": "笔记本上被撕掉的一栏",
+    "query": "torn page notebook dark close up"
+  },
+  {
+    "beat": "b7",
+    "zh": "一起走去学校的清晨",
+    "query": "empty street early morning mist walking"
+  },
+  {
+    "beat": "b8",
+    "zh": "中学的操场",
+    "query": "empty school playground dusk no people"
+  },
+  {
+    "beat": "b9",
+    "zh": "讲台与空课桌",
+    "query": "empty classroom desks afternoon light"
+  },
+  {
+    "beat": "b10",
+    "zh": "走廊尽头的光",
+    "query": "dark school corridor light at end"
+  },
+  {
+    "beat": "b11",
+    "zh": "相对的两扇窗",
+    "query": "two windows facing each other night building"
+  },
+  {
+    "beat": "b12",
+    "zh": "名声上的一块脏",
+    "query": "dark stain on white fabric close up"
+  },
+  {
+    "beat": "b13",
+    "zh": "熟人升职的那个夜里",
+    "query": "person silhouette standing by night window"
+  },
+  {
+    "beat": "b14",
+    "zh": "恶意是怎么长起来的",
+    "query": "crack in dark concrete wall close up"
+  },
+  {
+    "beat": "b15",
+    "zh": "那个门口",
+    "query": "dark doorway entrance night no people"
+  },
+  {
+    "beat": "b16",
+    "zh": "找不到源头",
+    "query": "foggy dark forest path no people"
+  },
+  {
+    "beat": "hook1",
+    "zh": "人群里的那个人",
+    "query": "crowd of people blurred dark street"
+  },
+  {
+    "beat": "hook2",
+    "zh": "车窗上的倒影",
+    "query": "car window reflection rain night"
+  }
+]

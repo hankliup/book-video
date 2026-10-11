@@ -1,0 +1,17 @@
+[
+  { "index": "result-bridge", "label": "静态桥接：旧墙与地中海光", "query": "old whitewashed stone wall mediterranean light shadow" },
+  { "index": 1, "label": "得知死讯与养老院：暗室空椅", "query": "empty wooden chair dark room window light vintage" },
+  { "index": 2, "label": "一年只去一次的长路", "query": "empty dusty country road vintage afternoon" },
+  { "index": 3, "label": "守灵：暗桌上一支烟", "query": "burning cigarette ashtray dark wooden table low light" },
+  { "index": 4, "label": "下葬：石墙与柏树", "query": "old cemetery stone wall cypress tree sunlight" },
+  { "index": 5, "label": "海边的第二天", "query": "empty mediterranean beach hot midday sea" },
+  { "index": 6, "label": "日复一日的窗", "query": "old apartment window wooden shutters balcony light" },
+  { "index": 7, "label": "玛丽：远处的身影", "query": "woman silhouette standing sea horizon distant" },
+  { "index": 8, "label": "雷蒙的信", "query": "vintage typewriter letter paper wooden desk" },
+  { "index": 9, "label": "老萨拉曼诺与老狗", "query": "old dog lying on floor dim interior light" },
+  { "index": 10, "label": "海滩上刺目的太阳", "query": "blinding white sun stones beach heat haze" },
+  { "index": 11, "label": "检察官与法庭走廊", "query": "empty courthouse corridor stone columns shadow" },
+  { "index": 12, "label": "空荡的旧广场", "query": "empty old town square stone paving sunlight" },
+  { "index": 13, "label": "神父带来的砖墙", "query": "old brick wall texture sunlight shadow" },
+  { "index": 14, "label": "结尾：石墙上的小窗与天", "query": "small window blue sky clouds stone wall" }
+]

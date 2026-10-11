@@ -1,0 +1,24 @@
+{
+  "虹": {
+    "hook": [
+      { "segment": "hook", "layer": "hook-1", "photo_id": 35070920, "photographer": "Yunus Tuğ", "query": "rain over empty english marshland at dusk", "beat": "三代人都想走出去，门外那块地没变大过" },
+      { "segment": "hook", "layer": "hook-2", "photo_id": 14803550, "photographer": "Claudia Schmalz", "query": "rain over empty english marshland at dusk", "beat": "这本书写完一年就被判下架，烧了一千零一十一本" }
+    ],
+    "body": [
+      { "layer": "atmosphere-1", "photo_id": 35878083, "photographer": "Ellie Burgin", "query": "muddy english farmyard winter mud", "beat": "书里的男人叫汤姆 / 他的地在诺丁汉郡，一片沼泽边的农场" },
+      { "layer": "atmosphere-2", "photo_id": 19783536, "photographer": "Gene Samit", "query": "old stone farmhouse window dim interior", "beat": "他不会写自己的名字，也不会算账" },
+      { "layer": "atmosphere-3", "photo_id": 26347925, "photographer": "Kayco Photo", "query": "old english village lane cobblestone lane", "beat": "那年冬天，逃难的人群里，走出一个女人" },
+      { "layer": "atmosphere-4", "photo_id": 37487451, "photographer": "Mike Maude", "query": "old english village lane cobblestone lane", "beat": "镇上的人都笑他" },
+      { "layer": "atmosphere-5", "photo_id": 7479513, "photographer": "Angela Roma", "query": "two hands close together warm light", "beat": "他们用身体说话 / 那是她一按，汤姆什么都明白了" },
+      { "layer": "atmosphere-6", "photo_id": 30156342, "photographer": "Eugene Golovesov", "query": "bare frost covered tree winter field grey", "beat": "安娜出生那年冬天，丽蒂雅没熬过来" },
+      { "layer": "atmosphere-7", "photo_id": 9706766, "photographer": "Steve B", "query": "old english village lane cobblestone lane", "beat": "她遇上了威尔，汤姆的侄儿 / 婚礼那天她哭了一路" },
+      { "layer": "atmosphere-8", "photo_id": 27362868, "photographer": "Sahuri", "query": "empty parlour two chairs dim window", "beat": "两个人住在一间屋子里，像两个房客" },
+      { "layer": "atmosphere-9", "photo_id": 35598822, "photographer": "Thiago Araujo", "query": "empty english village street night gas lamp", "beat": "安娜有一回深夜走出家门 / 她走到有路灯的那条街" },
+      { "layer": "atmosphere-10", "photo_id": 8714805, "photographer": "Sofya Kuvarzina", "query": "long empty road nowhere horizon dusk", "beat": "可每一条路都是一样的 / 没有一条是为她修的" },
+      { "layer": "atmosphere-11", "photo_id": 27872053, "photographer": "Alexander Mass", "query": "old classroom wooden desks schoolroom", "beat": "她考上了城里的学校，念了书，当了老师" },
+      { "layer": "atmosphere-12", "photo_id": 32940939, "photographer": "Betül Güneş", "query": "empty parlour two chairs dim window", "beat": "安东要的，是她变成他生活里的一样东西" },
+      { "layer": "atmosphere-13", "photo_id": 19922991, "photographer": "Matheus Bertelli", "query": "faded rainbow over grey countryside field", "beat": "他走了 / 厄休拉一个人走出门 / 雨一停，天上出了一道虹" },
+      { "layer": "atmosphere-14", "photo_id": 19923035, "photographer": "Matheus Bertelli", "query": "faded rainbow over grey countryside field", "beat": "烧掉的是书 / 没人烧得掉那道虹" }
+    ]
+  }
+}

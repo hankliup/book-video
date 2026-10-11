@@ -1,0 +1,18 @@
+[
+  {
+    "beat": "hook1",
+    "index": "hook-1",
+    "rows": "hook-1",
+    "zh": "他把所有想做的事，同时做了一遍",
+    "query": "sunlit vineyard trellis morning golden light south switzerland",
+    "label": "他把所有想做的事，同时做了一遍"
+  },
+  {
+    "beat": "hook2",
+    "index": "hook-2",
+    "rows": "hook-2",
+    "zh": "我才发现，自己一直在等一个合适的顺序",
+    "query": "empty stone bench quiet old street morning mist waiting",
+    "label": "我才发现，自己一直在等一个合适的顺序"
+  }
+]

@@ -1,0 +1,41 @@
+[
+  {
+    "name": "result-bridge",
+    "photo_id": 37937284,
+    "photographer": "Harriet Fletcher",
+    "url": "https://www.pexels.com/zh-cn/photo/37937284/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/37937284/",
+    "image_url": "https://images.pexels.com/photos/37937284/pexels-photo-37937284.jpeg",
+    "pixels": "2005x3024",
+    "avg_color": "#5F634A",
+    "alt": "阳光洒在历史悠久的石头建筑上，绿树成荫，空旷的人行道两旁是美丽的景色。",
+    "query": "london street morning sunlight white stone building",
+    "note": "片头定格页：六月伦敦清晨的街道，白石墙与橱窗反光"
+  },
+  {
+    "name": "atmosphere-1",
+    "photo_id": 22857266,
+    "photographer": "Andres Idda Bianchi",
+    "url": "https://www.pexels.com/zh-cn/photo/22857266/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/22857266/",
+    "image_url": "https://images.pexels.com/photos/22857266/pexels-photo-22857266.jpeg",
+    "pixels": "3886x5829",
+    "avg_color": "#504237",
+    "alt": "优雅展现1920年代穿着复古服装的演员，展示复古风格和戏剧性的表情。",
+    "query": "vintage 1920s formal party guests elegant interior",
+    "note": "体面的人群：一屋子人人得体的体面人"
+  },
+  {
+    "name": "atmosphere-2",
+    "photo_id": 14822504,
+    "photographer": "Leyla Helvaci",
+    "url": "https://www.pexels.com/zh-cn/photo/14822504/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/14822504/",
+    "image_url": "https://images.pexels.com/photos/14822504/pexels-photo-14822504.jpeg",
+    "pixels": "3024x4032",
+    "avg_color": "#524A37",
+    "alt": "坐在土耳其范省阿克达玛尔岛窗边的女人剪影。",
+    "query": "person sitting alone by window afternoon light back view",
+    "note": "一个人的下午：拱窗前独自坐着的剪影"
+  }
+]

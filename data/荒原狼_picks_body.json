@@ -1,0 +1,17 @@
+[
+  { "name": "result-bridge", "sheet": "tmp/px-荒原狼/sheet1.png", "cell": 2, "note": "定格页：冬夜老门上方只亮着一扇窗" },
+  { "name": "atmosphere-1", "sheet": "tmp/px-荒原狼/sheet1.png", "cell": 9, "note": "后半夜还亮着的那盏台灯，桌前一副想走的脾气" },
+  { "name": "atmosphere-2", "sheet": "tmp/px-荒原狼/sheet1.png", "cell": 16, "note": "体面人家的旧公寓外墙，夜里几扇亮着的窗" },
+  { "name": "atmosphere-3", "sheet": "tmp/px-荒原狼/sheet1.png", "cell": 21, "note": "屋里的靠椅与火炉，暗壁龛前一把木椅" },
+  { "name": "atmosphere-4", "sheet": "tmp/px-荒原狼/sheet1.png", "cell": 43, "note": "狼（第一处）：雪地里独自站立的灰狼" },
+  { "name": "atmosphere-5", "sheet": "tmp/px-荒原狼/sheet2.png", "cell": 6, "note": "酒馆角落：暖暗灯光下的酒杯与桌面" },
+  { "name": "atmosphere-6", "sheet": "tmp/px-荒原狼/sheet3.png", "cell": 27, "note": "后半夜没人的那条街：雨后鹅卵石路与暖路灯" },
+  { "name": "atmosphere-7", "sheet": "tmp/px-荒原狼/sheet2.png", "cell": 21, "note": "人是桥：雪后无人的河堤、枯苇与石桥" },
+  { "name": "atmosphere-8", "sheet": "tmp/px-荒原狼/sheet2.png", "cell": 26, "note": "赫尔米娜教跳舞：暗舞池一束光下的两个人" },
+  { "name": "atmosphere-9", "sheet": "tmp/px-荒原狼/sheet2.png", "cell": 31, "note": "路边一朵花：枯茎上一朵小白花" },
+  { "name": "atmosphere-10", "sheet": "tmp/px-荒原狼/sheet3.png", "cell": 6, "note": "小剧院：红丝绒幕布前的一点暖光" },
+  { "name": "atmosphere-11", "sheet": "tmp/px-荒原狼/sheet3.png", "cell": 8, "note": "一排小门：昏暗走廊两侧的门" },
+  { "name": "atmosphere-12", "sheet": "tmp/px-荒原狼/sheet3.png", "cell": 33, "note": "他站在那儿半天没说话：冷光下的独坐剪影" },
+  { "name": "atmosphere-13", "sheet": "tmp/px-荒原狼/sheet1.png", "cell": 44, "note": "狼（第二处）：雪林里行走的孤狼" },
+  { "name": "atmosphere-14", "sheet": "tmp/px-荒原狼/sheet3.png", "cell": 15, "note": "结尾：黎明前发蓝的雪屋顶" }
+]

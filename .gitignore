@@ -1,0 +1,54 @@
+# Local credentials and generated workspace state
+.env
+.env.*
+!.env.example
+.book-automation-state.json
+.uploads/
+
+# Local candidate data
+data/book-pipeline.csv
+data/.book-pipeline-backup-*.csv
+data/.backup/
+
+# Do not publish downloaded reference videos or large local models
+assets/reference-videos/
+assets/models/
+
+# Local episode outputs
+episodes/*
+!episodes/README.md
+
+# Local agent/plugin state
+.agents/
+skills-lock.json
+tmp/
+docs/superpowers/
+
+# Other agent/editor tool state present in this workspace (added 2026-10-11)
+.workbuddy/
+.workbuddy-ai/
+.codeartsdoer/
+.box-agent/
+.box-agent-scratch/
+.commandcode/
+.meituan-catpaw/
+.monkeycode/
+.arts/
+.ohmyagent/
+.temp/
+.obsidian/workspace*.json
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.cache/
+.parcel-cache/
+*.log
+
+# Python bytecode (scripts/lib/*.py 被渲染器 import 时会生成)
+__pycache__/
+*.py[cod]
+
+# OS/editor noise
+.DS_Store

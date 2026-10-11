@@ -1,0 +1,12 @@
+{
+  "version": "A",
+  "hook_lines": [
+    "一个人只要还有人找他，就不算真的消失。",
+    "你上一次敢指望有人来找你，是多久以前。"
+  ],
+  "golden_line": "一个人只要还有人找他，就不算真的消失。",
+  "cover_hook": "消失两年，还会有人找你吗",
+  "cover_tag": "儒勒·凡尔纳 / 著",
+  "hook_design": "金句前置+代价落差，详见 episodes/格兰特船长的儿女/brief.json 的 hook_design 字段。",
+  "status": "pending_approval"
+}

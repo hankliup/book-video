@@ -1,0 +1,38 @@
+[
+  {
+    "name": "atmosphere-17",
+    "photo_id": 15127452,
+    "photographer": "Riccardo Fraccarollo",
+    "url": "https://www.pexels.com/zh-cn/photo/15127452/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/15127452/",
+    "image_url": "https://images.pexels.com/photos/15127452/pexels-photo-15127452.jpeg",
+    "pixels": "3000x4000",
+    "avg_color": "#8E7F7C",
+    "alt": "维罗纳的空教室，阳光透过窗户洒进来。",
+    "query": "italian public office interior empty chairs daylight",
+    "note": "跟着笑的那一下，比知道真相更难承认。 · 意大利旧警局式拱廊房间；绿色 USCITA DI EMERGENZA 指示牌在画面左上角，用 crop_box 切掉",
+    "dir": "images-hook",
+    "segment": "hook",
+    "crop_box": [
+      0.14,
+      0,
+      1,
+      1
+    ]
+  },
+  {
+    "name": "atmosphere-18",
+    "photo_id": 17694842,
+    "photographer": "Tuğba",
+    "url": "https://www.pexels.com/zh-cn/photo/17694842/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/17694842/",
+    "image_url": "https://images.pexels.com/photos/17694842/pexels-photo-17694842.jpeg",
+    "pixels": "2872x3985",
+    "avg_color": "#8E8F89",
+    "alt": "一把孤独的木椅靠在阳光照射的墙上，投射出引人入胜的阴影。",
+    "query": "single empty chair against wall shadow daylight",
+    "note": "会议室里那次我没笑，事后想了很久为什么。 · 空楼梯间与铁栏，冷灰调，接「意外死亡」的无人现场",
+    "dir": "images-hook",
+    "segment": "hook"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "atmosphere-26",
+    "photo_id": 11594915,
+    "photographer": "Oleg Podlesnykh",
+    "url": "https://www.pexels.com/zh-cn/photo/11594915/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/11594915/",
+    "image_url": "https://images.pexels.com/photos/11594915/pexels-photo-11594915.jpeg",
+    "pixels": "3989x6000",
+    "avg_color": "#4C4C4C",
+    "alt": "一幅宁静的灰度场景，光秃树木倒映在平静的湖面上。",
+    "query": "still dark water at dusk reflection bare trees no people",
+    "note": "替换 Pexels #30108437（《悉达多》正文已用）：黑白静水把枯树整棵收进去，咽回去的话都有了下场",
+    "dir": "images-hook",
+    "segment": "hook"
+  },
+  {
+    "name": "atmosphere-25",
+    "photo_id": 35745045,
+    "photographer": "Noland Live",
+    "url": "https://www.pexels.com/zh-cn/photo/35745045/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/35745045/",
+    "image_url": "https://images.pexels.com/photos/35745045/pexels-photo-35745045.jpeg",
+    "pixels": "4672x7008",
+    "avg_color": "#787A75",
+    "alt": "一幅宁静的冬季场景，雾中的森林小径，光秃的树木和被雪覆盖的地面。",
+    "query": "two diverging snowy paths empty winter dusk no people",
+    "note": "雪雾里的分岔路：做个好人还是把事做对",
+    "crop_box": [
+      0.13,
+      0,
+      1,
+      1
+    ],
+    "dir": "images-hook",
+    "segment": "hook"
+  }
+]

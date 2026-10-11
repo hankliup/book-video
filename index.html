@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=720, height=960" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 720px; height: 960px; overflow: hidden; background: #000; }
+      body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+      #root { position: relative; width: 720px; height: 960px; }
+      .clip { position: absolute; inset: 0; }
+      .bg-image { position: absolute; inset: 0; background-size: cover; background-position: center; }
+      .subtitle { position: absolute; bottom: 150px; left: 40px; right: 40px; font-size: 26px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); line-height: 1.6; text-align: center; }
+      .title-bar { position: absolute; top: 40px; left: 40px; color: #fff; }
+      .book-title { font-size: 30px; font-weight: bold; }
+      .book-author { font-size: 18px; opacity: 0.8; margin-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="191" data-width="720" data-height="960">
+      <audio id="voiceover" data-start="0" data-duration="191" src="body-voiceover.mp3"></audio>
+      <audio id="bgm" data-start="0" data-duration="229" src="bgm.mp3" data-media-start="0" data-volume="0.3"></audio>
+      <div class="clip" id="scene-main" data-start="0" data-duration="191" data-track-index="0">
+        <div class="bg-image" id="bg-image" style="background-image: url('assets/images/war_trench.jpg')"></div>
+        <div class="title-bar">
+          <div class="book-title">钢铁是怎样炼成的</div>
+          <div class="book-author">尼古拉·奥斯特洛夫斯基</div>
+        </div>
+        <div class="subtitle" id="subtitle"></div>
+      </div>
+    </div>
+    <script>
+      const subtitles = [
+        {text: "《钢铁是怎样炼成的》", start: 0, end: 2},
+        {text: "你有多久没为自己活过了", start: 2, end: 5},
+        {text: "每天刷手机到凌晨醒来又是一样的日子", start: 5, end: 10},
+        {text: "你心里有没有一个声音越来越小", start: 10, end: 14},
+        {text: "书里写的是保尔柯察金的故事", start: 14, end: 18},
+        {text: "他全身瘫痪双目失明", start: 18, end: 22},
+        {text: "但他做了一个决定", start: 22, end: 25},
+        {text: "不能动了那就写看不见了那就口述", start: 25, end: 31},
+        {text: "他把钢铁般的意志一个字一个字留下来", start: 31, end: 37},
+        {text: "稿子丢了重新写终于出版了", start: 37, end: 42},
+        {text: "书里说人最宝贵的是生命", start: 42, end: 47},
+        {text: "不要因为虚度年华而悔恨", start: 47, end: 54},
+        {text: "不要因为碌碌无为而羞愧", start: 54, end: 59},
+        {text: "这本书不是口号", start: 59, end: 63},
+        {text: "它是一个人选择在黑暗中未关灯", start: 63, end: 68}
+      ];
+      const images = ["war_trench.jpg", "writing_scene.jpg", "steel_fire.jpg", "dawn_light.jpg"];
+      const subtitle = document.getElementById("subtitle");
+      const bgImage = document.getElementById("bg-image");
+      let current = 0;
+      let lastImg = -1;
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({
+        onUpdate: function() {
+          const t = this.time();
+          while (current < subtitles.length && subtitles[current].end <= t) current++;
+          if (current < subtitles.length) subtitle.textContent = subtitles[current].text;
+          const imgIdx = Math.floor(t / 48) % images.length;
+          if (imgIdx !== lastImg) {
+            lastImg = imgIdx;
+            bgImage.style.backgroundImage = "url('assets/images/" + images[imgIdx] + "')";
+          }
+        }
+      });
+      tl.to({}, {duration: 191});
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+[
+  { "beat": "result-bridge", "rows": "1", "zh": "暗处只亮着一扇窗：两个世界", "query": "old house night single lit window dark snow" },
+  { "beat": "b1", "rows": "2-6", "zh": "屋里的世界：灯下的旧房间", "query": "warm lamp lit old interior night quiet" },
+  { "beat": "b2", "rows": "7-12", "zh": "屋外的世界：雨后的暗巷", "query": "dark narrow alley wet night dusk empty" },
+  { "beat": "b3", "rows": "13-18", "zh": "街角那个人：少年的影子", "query": "lone boy silhouette dark street foggy" },
+  { "beat": "b4", "rows": "19-24", "zh": "放学后的门房：等一个人", "query": "empty old corridor doorway shadow light" },
+  { "beat": "b5", "rows": "25-31", "zh": "夜里坐在河边的台阶上", "query": "stone steps by dark river night reflection" },
+  { "beat": "b6", "rows": "32-37", "zh": "转学生：照进旧教室的那束光", "query": "shaft of light dark old classroom dust" },
+  { "beat": "b7", "rows": "38-44", "zh": "街口对峙，雾把两个人隔开", "query": "two distant figures foggy street separate" },
+  { "beat": "b8", "rows": "45-50", "zh": "额上的记号：石头上风化的刻痕", "query": "weathered carved marks old stone wall close up" },
+  { "beat": "b9", "rows": "51-56", "zh": "鸟要出壳：裂开的蛋壳", "query": "cracked eggshell dark surface close up moody" },
+  { "beat": "b10", "rows": "57-62", "zh": "在教堂里不敢闭眼", "query": "dark church interior empty pews dim light" },
+  { "beat": "b11", "rows": "63-68", "zh": "后墙上那张脸", "query": "carved face stone wall moss relief dark" },
+  { "beat": "b12", "rows": "69-74", "zh": "引路人：烛下翻开的旧书", "query": "candle flame open old book dark desk" },
+  { "beat": "b13", "rows": "75-80", "zh": "只想远远看的那个人：逆光的窗帘", "query": "backlit sheer curtain window figure soft light" },
+  { "beat": "b14", "rows": "81-88", "zh": "战争与伤口：雾里的铁轨", "query": "fog abandoned railway tracks dusk desolate" },
+  { "beat": "b15", "rows": "89-93", "zh": "通往自己的路：雪地上一串脚印", "query": "single footprint trail in snow field morning" },
+  { "beat": "h1", "rows": "hook-1", "zh": "钩子金句：清晨独自上路", "query": "lone person walking misty road early morning" },
+  { "beat": "h2", "rows": "hook-2", "zh": "钩子落差：战场上", "query": "rusted barbed wire fog field dawn grey" }
+]

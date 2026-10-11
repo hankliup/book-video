@@ -1,0 +1,47 @@
+[
+  {
+    "name": "atmosphere-1",
+    "photo_id": 36688932,
+    "photographer": "PIC MATTI",
+    "url": "https://www.pexels.com/zh-cn/photo/36688932/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/36688932/",
+    "image_url": "https://images.pexels.com/photos/36688932/pexels-photo-36688932.jpeg",
+    "pixels": "4160x6240",
+    "avg_color": "#221816",
+    "alt": "特写镜头展现了相互连接的生锈金属链条的纹理和腐朽痕迹。",
+    "query": "rusty iron chain",
+    "note": "钩子第 1 拍：我身上的铁链，是我自己一环一环打出来的。沉重冷锈的大环链特写，暗部压得住，与煤灰底色同族",
+    "dir": "images-hook",
+    "segment": "hook"
+  },
+  {
+    "name": "atmosphere-2",
+    "photo_id": 18740651,
+    "photographer": "KNKO Photography",
+    "url": "https://www.pexels.com/zh-cn/photo/18740651/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/18740651/",
+    "image_url": "https://images.pexels.com/photos/18740651/pexels-photo-18740651.jpeg",
+    "pixels": "5304x7952",
+    "avg_color": "#241A11",
+    "alt": "生锈的锁具特写，位于一扇布满灰尘的木门上，象征着安全的衰退。",
+    "query": "old iron lock key dark",
+    "note": "钩子第 2 拍：你攒下的每一样，最后都变成你自己的锁。积灰木门上的一把锈挂锁，暗调暖褐，锁得死",
+    "dir": "images-hook",
+    "segment": "hook"
+  },
+  {
+    "name": "result-bridge",
+    "photo_id": 11377379,
+    "photographer": "COJACK MATIAS",
+    "url": "https://www.pexels.com/zh-cn/photo/11377379/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/11377379/",
+    "image_url": "https://images.pexels.com/photos/11377379/pexels-photo-11377379.jpeg",
+    "pixels": "4016x6016",
+    "avg_color": "#211E0D",
+    "alt": "一盏经典街灯在黑暗背景下温暖地发光，唤起怀旧之情。",
+    "query": "hanging chain dark wall night",
+    "note": "片头结果页定格：老式煤气灯挂在旧灰泥墙上，暖光只照亮画面中段，上部留大片暗给常驻《书名》与作者行。与 atmosphere-1 的双灯砖墙不是同一张、也不是同一机位",
+    "dir": "images-body",
+    "segment": "body"
+  }
+]

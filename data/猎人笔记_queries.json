@@ -1,0 +1,104 @@
+[
+ {
+  "beat": "result-bridge",
+  "rows": "1",
+  "zh": "片头结果页定格：晨雾里一条没人走过的土路，书名与作者先在这里立住",
+  "query": "empty country road morning fog field no people"
+ },
+ {
+  "beat": "b1",
+  "rows": "2-6",
+  "zh": "一八四七年到一八五二年，一支猎枪走过俄罗斯中部的村庄",
+  "query": "russian village wooden houses distant mist field dusk"
+ },
+ {
+  "beat": "b2",
+  "rows": "7-10",
+  "zh": "赶马车的、守林的、看病的、种地的，谁他都肯停下来听",
+  "query": "rutted dirt road through harvested field hay no people"
+ },
+ {
+  "beat": "b3",
+  "rows": "11-14",
+  "zh": "有个老农把受过的苦笑着讲完，眼睛里噙着泪",
+  "query": "old weathered wooden farmhouse wall shadow warm light"
+ },
+ {
+  "beat": "b4",
+  "rows": "15-18",
+  "zh": "书里还有一个更轻的人，没有一个人知道他的存在",
+  "query": "dark interior empty wooden chair single shaft of light"
+ },
+ {
+  "beat": "b5",
+  "rows": "19-24",
+  "zh": "一个给自己盖了房子，一个住在林子里，说话温和",
+  "query": "birch forest light beams quiet path no people"
+ },
+ {
+  "beat": "b6",
+  "rows": "25-30",
+  "zh": "阿库丽娜被喜欢的人丢在原地，那朵矢车菊早就枯了",
+  "query": "calm river bank reeds grass dusk no people"
+ },
+ {
+  "beat": "b7",
+  "rows": "31-36",
+  "zh": "五个农家孩子夜里在草原上围着火堆讲故事",
+  "query": "night campfire sparks dark open field embers"
+ },
+ {
+  "beat": "b8",
+  "rows": "37-40",
+  "zh": "可惜，巴夫路霞就在这一年内死了，一整夜的活泼只剩一行字",
+  "query": "misty river at dawn still water fog cold"
+ },
+ {
+  "beat": "b9",
+  "rows": "41-44",
+  "zh": "村里唱歌的比赛，全场没人动，都在等他再唱一句",
+  "query": "old village wooden huts at dusk empty street no people"
+ },
+ {
+  "beat": "b10",
+  "rows": "45-54",
+  "zh": "长住的人不说真心话；我们每天也路过很多人，只记得他们的用处",
+  "query": "single lit window night snow village warm glow"
+ },
+ {
+  "beat": "b11",
+  "rows": "55-58",
+  "zh": "他把他们当成完整的人记下来，在那个只有老爷才有名字的年头",
+  "query": "snow covered cart tracks winter forest path"
+ },
+ {
+  "beat": "b12",
+  "rows": "59-64",
+  "zh": "他生在奥廖尔，母亲手上有五百多个农奴，他一生讨厌这套制度",
+  "query": "old estate garden tree lined path autumn shadows"
+ },
+ {
+  "beat": "b13",
+  "rows": "65-75",
+  "zh": "为果戈理写悼文被关一个月，九年以后农奴制废除",
+  "query": "winter birch forest snow dim grey light trees"
+ },
+ {
+  "beat": "b14",
+  "rows": "76-86",
+  "zh": "风景写得越美，人间的苦越清楚；在春天容易别离，祝您永远如意称心",
+  "query": "cut rye field stubble horizon lone tree spring sky"
+ },
+ {
+  "beat": "h1",
+  "rows": "hook-1",
+  "zh": "人和人最远的距离，是天天见面",
+  "query": "vast empty winter field horizon dusk no people"
+ },
+ {
+  "beat": "h2",
+  "rows": "hook-2",
+  "zh": "你身边有几个人，听你讲完过自己的从前",
+  "query": "open wooden door warm light dark exterior night"
+ }
+]

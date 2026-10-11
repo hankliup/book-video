@@ -1,0 +1,57 @@
+{
+  "query": "微信读书 Skill /store/search keyword=荒凉山庄 + /book/info + /book/bestbookmarks + /review/list（2026-10-04）",
+  "candidates": [
+    {
+      "status": "selected",
+      "display_title": "荒凉山庄",
+      "source_title": "荒凉山庄(套装上下册)(插图珍藏本)",
+      "author": "[英]狄更斯",
+      "translator": "黄邦杰,陈少衡,张自谋",
+      "source_channel": "weread",
+      "source_book_id": "26713589",
+      "category": "文学-外国文学",
+      "rating": "836",
+      "rating_count": "316",
+      "reading_count": "27",
+      "highlight_top_count": "439",
+      "reviews_count": "154",
+      "resonance_score": "high",
+      "emotion_theme": "等待;希望;消耗;正义失效;父女不相认",
+      "selection_reason": "用户点名。19 世纪现实主义长篇，两条主线（旷日持久的遗产诉讼 + 德洛克夫人的身世秘密），读者基数最大的中译本。多位读者独立指认同一情感核心：明明心怀希望，最后被自己的希望害死——本期主线即取此。",
+      "video_project": "episodes/荒凉山庄",
+      "notes": "副标题含套装与插图字样，display_title 取短名荒凉山庄；另有人文社主万/徐自立译本（bookId 32879991，883 分/80 人）作版本对照，未选用为 source。"
+    },
+    {
+      "status": "candidate",
+      "display_title": "荒凉山庄",
+      "source_title": "荒凉山庄（全2册）",
+      "author": "[英]狄更斯",
+      "translator": "主万,徐自立",
+      "source_channel": "weread",
+      "source_book_id": "32879991",
+      "category": "文学-外国文学",
+      "rating": "883",
+      "rating_count": "80",
+      "reading_count": "8",
+      "resonance_score": "medium",
+      "emotion_theme": "雾;法庭讽刺;遗产吞噬人生",
+      "selection_reason": "评分最高的简体单行本（主万译），但评价人数仅为插图珍藏本的四分之一，热度与划线样本不足，留作版本对照。",
+      "notes": "人民文学出版社 2020-04-28，ISBN 9787020122073。"
+    },
+    {
+      "status": "candidate",
+      "display_title": "荒凉山庄",
+      "source_title": "荒凉山庄（上下）（英文版）",
+      "author": "[英]查尔斯·狄更斯",
+      "source_channel": "weread",
+      "source_book_id": "33617140",
+      "category": "文学-外国文学",
+      "rating": "0",
+      "rating_count": "4",
+      "reading_count": "2",
+      "resonance_score": "low",
+      "selection_reason": "英文原版，评分为零，仅作原著书名与作者名核对（Bleak House / Charles Dickens）之用，不作视频来源。",
+      "notes": "与 AGENTS.md 的版本核对要求一致：source_title 保留原样，display_title 取短名。"
+    }
+  ]
+}

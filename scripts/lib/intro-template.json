@@ -1,0 +1,13 @@
+{
+  "_comment": "共享片头（templates/shared-video-template/intro）的画面时刻表。裁切点跟着**画面**走、不跟配音走：结果页在 scroll_end 才定格，裁在它之前就会把滚动书单的一格直接拼到正文第一帧上（AGENTS.md「The trim point follows the picture」）。渲染器与交付门禁都从这里取值，两边不许再各写一遍秒数。",
+  "scroll_start": 1.08,
+  "scroll_end": 2.38,
+  "result_page_at": 2.38,
+  "template_duration": 4.25,
+  "voiceover_seconds": 1.83,
+  "trim_seconds": 3.0,
+  "hook_fade_out_seconds": 0.4,
+  "_hook_fade_comment": "hook_fade_out_seconds：钩子段尾淡出到黑的长度，2026-10-05 回滚之后**唯一保留**的抗闪屏装置，也是这里唯一还允许调的数。共享片头按 2026-10-03 的原样交付（0.13s 全黑起幅 + ~0.47s 飞到亮度平台），它前面是本期那张均亮度 40~60 的钩子照片，硬切过去就是 2026-10-04 第一次量到的那次眨眼（《嫌疑人X的献身》成片第 8.27s 单帧 42.4→0.0，判据①）。让钩子自己沉到黑去接片头的黑起幅，两侧同暗，接缝就没有可翻的案。0.4s 不是随手写的：必须 ≥ 判据④的时间尺度 FLICKER_LEG_MAX_S 0.35s，否则「掉下去又爬回来」两条腿都够短，这段淡出本身会被数成一处「去了又回」；>1.0s 就是在裁本期内容。两条渲染路径（render-episode-final.mjs / render_scene_map_template_fallback.py）都只从这里取这个数并画 fade=t=out:st=，第 10 道门按同一个数划豁免窗，四处同源，由 scripts/tests/test-hook-seam-fade.py 两头按（单调淡出 0 处、去掉淡出必须翻红）。",
+  "_flicker_scope_comment": "闪屏门禁（scripts/check-luminance-flicker.py）判什么：判据②~⑥ 只判**本片自己的画面**——钩子段自身（减掉段尾 hook_fade_out_seconds 那拍淡出）与正文起幅一秒；共享片头窗 [hook_dur, hook_dur+trim_seconds) 整段只报告不判红。这不是给片头开免检，而是用户 2026-10-05 裁决的范围本体：「恢复原来的固定开场白效果，只改动钩子视频的闪屏问题」——片头那三拍（全黑起幅、书单→结果页砸黑、0.175s 整幅换页）就是要按原样交付，把它们判红只会换来「压暗封面」或「改版式」这两种被明令禁止的修法。豁免的是**范围**，不是阈值：①~⑥ 的形状、阈值、参照物（本片自己的正文）一个字没动，同样的亮度形状放进钩子段照样红，这一点由 scripts/tests/test-flicker-rules.py 用「同一个闪烁在两个位置之间搬一次、判决翻面而被判帧数逐字节相同」钉住。判据①（40 级闸刀）仍然判钩子→片头与片头→正文两道缝，接缝漏不掉。每次运行都印出片头窗自己的实测数（峰值 / 最暗 / 来回处数 / MAD 峰值 / 越带 / 「按同一套判据本会翻 N 项红」），代价摆在纸上而不是藏进阈值。",
+  "_retired_keys_comment": "以下键已随 2026-10-05 的裁决删除，不要凭记忆补回来：junction_dissolve_seconds（13:04「只改过渡形状」那轮加的钩子末帧克隆 + 就地等长溶解；用户 14:46「重新恢复固定开场白，保留原始效果」已把那次授权收回，2026-10-06 复核时它又被一次陈旧缓冲区保存写回过一次，旧件与它的测试都在 tmp/retired-20261005c/）、page_plan（按亮度距离给六页溶解分配帧数，同一轮的产物）、opening_runway_seconds + scripts/lib/intro_runway.py（给「从全黑飞入」垫跑道）、handoff_min_runway_seconds（HANDOFF 跑道随 .template-blackout 一起回来了就不存在了）、page_luma_band / page_luma_max_spread / page_canvas + scripts/grade-template-pages.py（给底图调亮度被用户否决两次：10-04「片头比从前暗」、10-05「任何一张底图的亮度和现在完全一样」）。"
+}

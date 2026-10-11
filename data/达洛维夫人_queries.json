@@ -1,0 +1,18 @@
+[
+  { "index": "result-bridge", "label": "定格页：六月伦敦清晨的街道，白石墙与橱窗反光", "query": "london street summer morning sunlight white stone building" },
+  { "index": 1, "label": "出门买花：白灰石联排屋的门与黄铜门环", "query": "white townhouse front door morning light" },
+  { "index": 2, "label": "六月的伦敦早上：街角橱窗与人行道反光", "query": "london shop window glass reflection street morning" },
+  { "index": 3, "label": "塞普蒂默斯的房间：开着窗、暗帘、空床", "query": "empty bedroom open window dark curtain morning" },
+  { "index": 4, "label": "医生那里：一排空椅子的等候处", "query": "empty waiting room chairs corridor daylight" },
+  { "index": 5, "label": "彼得站在街角：一个背影拉长的影子", "query": "london pavement pedestrian shadow back view sunny" },
+  { "index": 6, "label": "庄园草地：树影里的盛夏草坪", "query": "english country house lawn summer trees shadow" },
+  { "index": 7, "label": "理查德的世界：旧书与暖光", "query": "old library bookshelves warm light room" },
+  { "index": 8, "label": "插花备菜：白桌布上的白花与蕾丝袖口", "query": "white flowers on white tablecloth still life soft light" },
+  { "index": 9, "label": "晚宴：长桌白布与烛台", "query": "long dining table white linen candelabra elegant" },
+  { "index": 10, "label": "公园长椅：盛夏空荡的绿荫", "query": "empty park bench summer green trees shade" },
+  { "index": 11, "label": "白门廊的走廊：光斑与一道门", "query": "empty corridor white door light shadow" },
+  { "index": 12, "label": "回到卧室：旧镜前的清晨", "query": "antique mirror bedroom morning light empty room" },
+  { "index": 13, "label": "走到窗前：纱帘与发白的天光", "query": "sheer curtain window dawn light empty room" },
+  { "index": 14, "label": "买来的白花：柔光下的花瓣", "query": "white roses petals close up soft natural light" },
+  { "index": 15, "label": "散场之后：一排空椅子的长桌", "query": "empty dining chairs table after party morning" }
+]

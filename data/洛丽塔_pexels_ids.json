@@ -1,0 +1,32 @@
+[
+  {
+    "name": "atmosphere-24",
+    "photo_id": 32836050,
+    "dir": "images-hook",
+    "segment": "hook",
+    "photographer": "DΛVΞ GΛRCIΛ",
+    "url": "https://www.pexels.com/zh-cn/photo/32836050/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/32836050/",
+    "image_url": "https://images.pexels.com/photos/32836050/pexels-photo-32836050.jpeg",
+    "pixels": "4000x6000",
+    "avg_color": "#2F2F2F",
+    "alt": "一台经典的复古打字机放在木桌上，唤起怀旧与永恒的创造力。",
+    "query": "vintage typewriter dark desk moody",
+    "note": "钩子第 1 句「他管那种东西叫爱，叫了整本书」：一台旧 Underwood 打字机的斜侧特写，暗桌面，没有纸——他把词敲成书名"
+  },
+  {
+    "name": "atmosphere-25",
+    "photo_id": 28185207,
+    "dir": "images-hook",
+    "segment": "hook",
+    "photographer": "Franco Garcia",
+    "url": "https://www.pexels.com/zh-cn/photo/28185207/",
+    "page_url": "https://www.pexels.com/zh-cn/photo/28185207/",
+    "image_url": "https://images.pexels.com/photos/28185207/pexels-photo-28185207.jpeg",
+    "pixels": "3976x5964",
+    "avg_color": "#6A7964",
+    "alt": "在绿树成荫的公园里，宁静的游乐场中有黄色秋千，其背后是阴云密布的天空，营造出怀旧的氛围。",
+    "query": "empty swing set backyard overcast",
+    "note": "钩子第 2 句「我读到最后一行才想起，她一句也没说过」：阴天空公园里三个没人坐的秋千，板子垂着不动"
+  }
+]

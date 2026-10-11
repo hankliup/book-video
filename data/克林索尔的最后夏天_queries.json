@@ -1,0 +1,130 @@
+[
+  {
+    "beat": "result-bridge",
+    "index": "result-bridge",
+    "rows": "1",
+    "zh": "定格页：山谷村子里唯一亮着的一扇窗",
+    "query": "old stone village night single lit warm window dark mountains",
+    "label": "定格页：山谷村子里唯一亮着的一扇窗"
+  },
+  {
+    "beat": "b1",
+    "index": 1,
+    "rows": "2-11",
+    "zh": "战后南边的山谷：葡萄、栗树、很亮的湖",
+    "query": "southern switzerland valley lake mountains chestnut trees summer daylight",
+    "label": "战后南边的山谷：葡萄、栗树、很亮的湖"
+  },
+  {
+    "beat": "b2",
+    "index": 2,
+    "rows": "12-18",
+    "zh": "日头很毒，白天像一面在火里烧的旗",
+    "query": "burning bright summer sky over hot stone wall heat haze",
+    "label": "日头很毒，白天像一面在火里烧的旗"
+  },
+  {
+    "beat": "b3",
+    "index": 3,
+    "rows": "19-23",
+    "zh": "酒馆花园里喝酒，四个人吵到睡前",
+    "query": "wine glasses on old wooden table tavern garden shade sunlight",
+    "label": "酒馆花园里喝酒，四个人吵到睡前"
+  },
+  {
+    "beat": "b4",
+    "index": 4,
+    "rows": "24-28",
+    "zh": "天黑了点灯继续画，醉里自称李太白",
+    "query": "warm lamp lit old room table night quiet interior",
+    "label": "天黑了点灯继续画，醉里自称李太白"
+  },
+  {
+    "beat": "b5",
+    "index": 5,
+    "rows": "29-33",
+    "zh": "千万种东西等着被画，千万杯酒已斟满",
+    "query": "watercolor palette brushes vivid paint close up daylight",
+    "label": "千万种东西等着被画，千万杯酒已斟满"
+  },
+  {
+    "beat": "b6",
+    "index": 6,
+    "rows": "34-38",
+    "zh": "一首接一首地唱，从没唱成交响",
+    "query": "old violin resting by window shaft of light dark room",
+    "label": "一首接一首地唱，从没唱成交响"
+  },
+  {
+    "beat": "b7",
+    "index": 7,
+    "rows": "39-47",
+    "zh": "备忘录里全是等字",
+    "query": "handwritten paper list pen on old desk dim window light",
+    "label": "备忘录里全是等字"
+  },
+  {
+    "beat": "b8",
+    "index": 8,
+    "rows": "48-53",
+    "zh": "酒还有没喝的，夏天一过完就轮不上了",
+    "query": "empty wine glass on stone terrace evening warm light",
+    "label": "酒还有没喝的，夏天一过完就轮不上了"
+  },
+  {
+    "beat": "b9",
+    "index": 9,
+    "rows": "54-65",
+    "zh": "脆弱摊在朋友面前，一段读得心里发紧",
+    "query": "rain drops on window pane blurred village light interior",
+    "label": "脆弱摊在朋友面前，一段读得心里发紧"
+  },
+  {
+    "beat": "b10",
+    "index": 10,
+    "rows": "66-73",
+    "zh": "医生说十年后颜色全会褪掉",
+    "query": "sun faded peeling pastel wall texture close up light",
+    "label": "医生说十年后颜色全会褪掉"
+  },
+  {
+    "beat": "b11",
+    "index": 11,
+    "rows": "74-79",
+    "zh": "大自然有一万种颜色，别替将来的自己省钱",
+    "query": "bright vivid pigment colors painted wall summer light",
+    "label": "大自然有一万种颜色，别替将来的自己省钱"
+  },
+  {
+    "beat": "b12",
+    "index": 12,
+    "rows": "80-85",
+    "zh": "像一根蜡烛点着了两头",
+    "query": "candle flame burning wax drip dark close up",
+    "label": "像一根蜡烛点着了两头"
+  },
+  {
+    "beat": "b13",
+    "index": 13,
+    "rows": "86-93",
+    "zh": "雨来了，葡萄架底下凉了",
+    "query": "wet grapevine trellis after rain stone steps autumn mood",
+    "label": "雨来了，葡萄架底下凉了"
+  },
+  {
+    "beat": "b14",
+    "index": 14,
+    "rows": "94-100",
+    "zh": "全世界的水总会重逢，走出去的路也是回家的路",
+    "query": "mist over lake mountains dawn reflection quiet",
+    "label": "全世界的水总会重逢，走出去的路也是回家的路"
+  },
+  {
+    "beat": "b15",
+    "index": 15,
+    "rows": "101-107",
+    "zh": "黑塞自己在山里住了很多年，画画喝酒走路写随笔",
+    "query": "narrow stone path through old village mountain house sunlight",
+    "label": "黑塞自己在山里住了很多年，画画喝酒走路写随笔"
+  }
+]

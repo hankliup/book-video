@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "segment": "body",
+  "canvas": [720, 960],
+  "_why": "2026-10-07 用户要求「增加本书的封面图，从微信读书或网上获取，在固定开场白结束后跟水波效果一同出现」。这一层属于正文段，且只属于正文段的**起幅**：它在静止桥接卡上淡入、在涟漪收口处淡出，第一张氛围图走稳之前它必须已经离开。常驻整段会把墨迹摆进字幕取样带或闪屏取证窗口（见 reserved_bands 的三条），那是常驻声明用 y 885..924 那条窄带才换来的位置，一张 300px 宽的竖卡换不出来。",
+  "asset": {
+    "filename": "book-cover.jpg",
+    "provenance": "book-cover.json",
+    "min_source_width": 600,
+    "_comment": "封面图落在本期 episode 目录根，**不放 images-body/**：那个目录是 Pexels 实拍氛围图的领地，check-image-provenance.py 按清单逐张核对里面的每个文件，一张微信读书封面放进去会把溯源门禁判成「 shipped image 没有 Pexels 出处」。文件名用语义名不用序号（book-cover.jpg），因为它是「这本书的封面」这一个事实，不是序列里的一项。min_source_width 挡的是把微信读书 70×101 缩略图（s_ 前缀）拉成 300px 卡片的糊图。"
+  },
+  "slot": {
+    "x_center_em": 0.5,
+    "y0_px": 235,
+    "y1_px": 665,
+    "max_width_px": 300,
+    "_comment": "封面在画面正中的可用矩形：按源图比例等比内接、水平居中、在矩形内垂直居中，所以**任何**比例的封面都装得下且不越界（3:4 → 300×400，2:3 → 287×430）。几何不许由渲染器自己算——slot 是唯一真源，渲染器与门禁都调 lib/book_cover.py 的 geometry()/overlay()。"
+  },
+  "shadow": {
+    "offset_y_px": 12,
+    "blur_px": 22,
+    "rgba": [0, 0, 0, 0.6],
+    "_comment": "柔和落影：用户 2026-10-07 选「原色保留 + 柔和投影」，即封面图本身不降饱和、不调暗（它是「这本书长什么样」的事实，改色就不是它了），只靠投影把它从背景里托出来。这与常驻声明那条「不许模糊投影」不冲突：那一条治的是 alpha<1 的**文字**叠层随背景推近换景而呼吸；这张卡是不透明图块，投影只在卡片四周，卡片定格期间逐像素不变。"
+  },
+  "timing": {
+    "fade_in_from": "water_offset",
+    "fade_out_from": "ripple_end",
+    "fade_out_span": "scene_xfade",
+    "_comment": "三个时刻全部**推导**，一个秒数字面量都不许写：淡入长度 = lib/water-ripple.json 的 offsetSeconds（切点后水声起播前的那段静默跑道），所以封面正好在水波起振那一帧到达不透明——「跟水波效果一同出现」的精确读法，也让淡入的逐帧变化整段落在水波窗口 [offset, offset+dur) 之外，水波门禁量的是涟漪的径向逐帧差质心，窗口里多一块局部淡入会把它拽偏。退场起点 = 涟漪收口 offsetSeconds+durationSeconds，退场长度 = 场景交叉溶解时长 XFADE。用户 2026-10-07 在三个停留时长里选的是「只跟水波那 1.4 秒」而不是「跟着桥接卡」：桥接卡多长是本期切镜表的事（《乞力马扎罗的雪》2.18s，别期可能 0.8s 也可能 4s），跟着它就变成每期一个时长、并向被否决的「常驻整段」漂移；跟着涟漪收口，这一层在全库是同一个形状。代价写在 lib/book_cover.timing() 的注释里：本期首镜切在 2.18s，而封面 2.02s 就已经离开，所以那次淡出整个落在静止卡上，画面上不出现第二次独立的内容交换。"
+  },
+  "motion": {
+    "type": "zoom_in",
+    "device": "float_affine_per_frame",
+    "ease": "cosine",
+    "zoom_from": 0.82,
+    "zoom_to": 1.0,
+    "pace_min_px_per_second": 15.0,
+    "_comment": "2026-10-08 追加要求「封面出现时增加放大动态效果」，同日二次要求「放大过程不流畅，抖动得厉害，可以参考氛围图的动态效果，通过增强本书封面图的动态节奏速度来达到效果」。动效期为 t=0（正文起幅）→ 涟漪收口 fade_out_at，过 fade_out_at 保持终态直到淡出结束（平台期那拍正是终态，与水波同窗收放）；缩放原点取画幅中心（slot 是唯一真源，动效不该为每期卡框另开一套）。四条都是量出来的，不是审美选择，2026-10-08 用 alpha≥240 的亚像素插值沿卡体中部四行追左/右沿（tmp/ward6-cover-motion-measure.py，本期 42 帧）：⑴ **device 必须是逐帧浮点仿射**。被否掉的旧形状「resize 到 int(round(W*s)) 再按整数偏移贴回」把中心量化到整像素，实测 41 步里 24 步方向回退、逐帧位移均值 0.737px 峰 1.854px，净位移只有 17.4px 而路径 30.2px——七成位移花在来回上，这就是「抖动得厉害」。同款画面换成 Image.transform(AFFINE)+BICUBIC（与正文氛围镜头 zoom_frame 同一条矩阵）后回退 0 处。ffmpeg zoompan 同理不可用：x/y/裁剪宽高全取整。⑵ **ease=cosine**：0.5-0.5*cos(pi*u)，和氛围镜头的 ease_in_out 同款；线性匀角速度在这段短窗里读起来是机械推，两端骤起骤停才像一次镜头呼吸。⑶ **zoom_to 只能是 1.0**。1.00→1.12 那一版（装置已修好、只欠足迹）把卡体顶沿推到 y206——书名+作者层的下沿是 225，越带 19px；底沿推到 y686——字幕取样带上沿是 680，越带 6px。slot 的 y235..665 是**唯一**按三条保留带校过的矩形，缩放终态离开 1.0 就等于每期重新决定一次这层能压到哪里，而 `_assert_clear_of_reserved_bands()` 只量静态 slot，看不见动效足迹（现已按 zoom 两端并集量）。改成 0.82→1.00「长进标定卡框」后顶沿 235、底沿 664，越带 0/0。⑷ **pace_min_px_per_second 15.0** 是「比氛围图最快那一镜还快一点」的机器写法：本期氛围镜头按 scene-map 的 motion 块换算，最短镜 2.18s 的画面边缘速度 14.25px/s（20s 镜只有 1.5px/s），而被否决的 1.00→1.12 只有 12.96px/s——封面比它身后正在推的实拍图还慢，观众读作「一张静止的卡片在抖」。0.82→1.00 按卡框最大宽度 300 算是 19.57px/s（真卡按源图比例只会略窄略慢，量级不变），逐帧均值 0.658px、峰 1.118px、峰均比 1.70（是五种形状里最均匀的，也最快）。代价说清楚：起幅那一帧卡片是 0.82 倍（300→244px 宽），比标定卡框小 18%，落定在水波起振那一帧时约 0.85 倍，全程一直在长——这正是「跟水波一同出现然后推近」，不是「先摆好再抖」。门禁与渲染器共读本条：check-book-cover-overlay.py 与 check-water-ripple.py 的 --exclude-cover 卡框都按 zoom 两端取包络，缩放终态改回去会同时改掉那两块取证区。"
+  },
+  "reserved_bands": {
+    "caption_sweep": {
+      "owner": "scripts/qc-caption-alignment.py",
+      "constant": "BAND",
+      "y0": 680,
+      "y1": 850,
+      "_why": "字幕边界压测只在 y 680..850 里量「画面长出来的字幕墨迹」。封面进这条带，压测会把封面的白字当成该出现的字幕来比。"
+    },
+    "book_mark_layer": {
+      "owner": "scripts/render_scene_map_template_fallback.py",
+      "constant": "_AUTHOR_TOP（= 96 + 书名字号，字号上限 82）",
+      "y0": 60,
+      "y1": 225,
+      "_why": "常驻《书名》+ 作者层的地盘（y 70 起，作者行最坏到 212 + 投影）。封面压到它下面沿，两层会在切点上互相抢字。"
+    },
+    "disclaimer_line": {
+      "owner": "scripts/lib/disclaimer.json",
+      "constant": "font_size_px + bottom_px（墨迹 y 885..924）",
+      "y0": 875,
+      "y1": 930,
+      "_why": "底部常驻声明那一行。"
+    }
+  },
+  "match_min_iou": 0.3,
+  "max_box_rgb_diff": 26.0,
+  "max_absent_box_rgb_diff": 12.0,
+  "_thresholds_comment": "match_min_iou：成片帧减掉同期 body-bg 帧的残差墨迹，与 lib 现算 mask 在卡框内的 IoU 下限（证明「那里真的长出了一层东西」）。max_box_rgb_diff：把 lib 叠层直接合成到 body-bg 帧上得到预期帧，与成片卡框内的平均 RGB 差上限（证明「长出来的是**这张**封面」，不是黑块、不是另一本书）。max_absent_box_rgb_diff：封面该离开之后（涟漪收口 + 淡出长度，即 timing 的 gone_at，再 +0.4s 取样）成片与「无封面的预期帧」的差上限，证明它真的走了、没有常驻。三个数都由 scripts/tests/test-book-cover-overlay.py 双向按过：健康成片绿、没叠这层红、叠错图红、该走没走红。"
+}

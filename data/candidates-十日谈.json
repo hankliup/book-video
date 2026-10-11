@@ -1,0 +1,45 @@
+{
+  "query": "微信读书 Skill /store/search keyword=十日谈 + /book/info + /book/bestbookmarks + /review/list（2026-10-05）",
+  "candidates": [
+    {
+      "status": "selected",
+      "display_title": "十日谈",
+      "source_title": "十日谈（人文社外国文学名著经典·网格本）",
+      "author": "[意]薄伽丘",
+      "translator": "王永年",
+      "source_channel": "weread",
+      "source_book_id": "33820319",
+      "category": "文学-外国文学",
+      "rating": "742",
+      "rating_count": "100",
+      "reading_count": "62",
+      "highlight_top_count": "428",
+      "reviews_count": "36",
+      "resonance_score": "high",
+      "emotion_theme": "瘟疫的绝望里十个人用讲故事活下去;黑死病让人不再伪装;在坟墓边跳舞的不是疯狂,是人最朴素的回答",
+      "selection_reason": "用户点名。1348 佛罗伦萨黑死病背景下十名男女乡间避难、十天讲一百个故事；读者情绪信号集中在瘟疫中人性的松动与讲故事对抗死亡。主线取「在死亡面前人靠什么活下去」。",
+      "video_project": "episodes/十日谈",
+      "notes": "网格本（钱鸿嘉? 不，王永年译）人民文学出版社 2020，742 分/100 条评价；译林经典译本 856057（641 分/1466 条）作版本对照，未选用为 source。"
+    },
+    {
+      "status": "candidate",
+      "display_title": "十日谈",
+      "source_title": "十日谈（经典译林）",
+      "author": "[意]薄迦丘",
+      "translator": "钱鸿嘉,泰和庠,田青",
+      "source_channel": "weread",
+      "source_book_id": "856057",
+      "category": "文学-外国文学",
+      "rating": "641",
+      "rating_count": "1466",
+      "reading_count": "35",
+      "highlight_top_count": "",
+      "reviews_count": "",
+      "resonance_score": "medium",
+      "emotion_theme": "",
+      "selection_reason": "评分较低且新评偏低；备选。",
+      "video_project": "",
+      "notes": ""
+    }
+  ]
+}

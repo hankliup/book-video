@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "parts": [
+    "内容为书评与感悟",
+    "素材来源于网络"
+  ],
+  "gap_em": 0.6,
+  "font_size_px": 26,
+  "bottom_px": 44,
+  "color_rgba": [
+    150,
+    150,
+    150,
+    1.0
+  ],
+  "css_font_weight": 500,
+  "font_file": "/System/Library/Fonts/STHeiti Medium.ttc",
+  "shadow": {
+    "offset_y_px": 3,
+    "blur_px": 0,
+    "rgba": [
+      0,
+      0,
+      0,
+      1.0
+    ]
+  },
+  "segment": "body",
+  "ink_luma_range": [
+    45,
+    205
+  ],
+  "match_min_iou": 0.34,
+  "canvas": [
+    720,
+    960
+  ],
+  "band_pad_px": 8,
+  "reserved_bands": {
+    "caption_sweep": {
+      "owner": "scripts/qc-caption-alignment.py",
+      "constant": "BAND",
+      "y0": 680,
+      "y1": 850
+    },
+    "flicker_evidence": {
+      "owner": "scripts/check-luminance-flicker.py",
+      "constant": "LUMA_BAND_ROWS",
+      "rows": [
+        0,
+        35
+      ],
+      "probe_rows": 48,
+      "canvas_height": 960
+    }
+  },
+  "_fixed_note": "2026-10-06 用户报「底部水印显示波动、颜色变化」：alpha<1 的填充与投影会随背景推近/换景而变（实测核心灰度 133.5→136.7、边缘残差 13~21），改为不透明填充 + 不透明窄投影后合成结果与背景无关。"
+}
