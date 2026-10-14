@@ -84,6 +84,15 @@ scene = {
     "layers": layers,
 }
 out = os.path.join(epdir, "scene-map.json" if SEG == "body" else "scene-map-hook.json")
+# 行锚点：新表落盘时就把「这一层盖的是哪一句话」钉进去（判据在 scripts/lib/scene_map_anchors.py）。
+# 这份脚本反算出来的行号本来就是从 body-timings 的当下行文取的，锚点在这一刻有真值；
+# 事后补不出真值，所以只有生成时写。
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
+import scene_map_anchors as SA  # noqa: E402
+_anchor_rows, _ver, _blind = SA.anchor_rows(epdir)
+SA.stamp(scene, _anchor_rows,
+         note=f"anchors 由 build-scene-map.py 在生成这一层表时写入（文案版本 {_ver}）")
+scene["anchor_verified"] = True
 json.dump(scene, open(out, "w"), ensure_ascii=False, indent=2)
 print(f"wrote {out}: {count} atmosphere + result-bridge, rows 1..{max_order}")
 for L in layers:

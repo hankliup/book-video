@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { executionSites, stripComments } from "./lib/check-source-scan.mjs";
 
 const ROOT = process.cwd();
 const HYPERFRAMES_VERSION = "0.7.33";
@@ -19,6 +20,7 @@ const scriptFiles = [
   "scripts/render-episode-final.mjs",
   "scripts/validate-script.mjs",
   "scripts/lib/body-timings.mjs",
+  "scripts/lib/check-source-scan.mjs",
   "scripts/lib/episode-slug.mjs",
   "scripts/lib/env.mjs",
   "scripts/lib/script-policy.mjs",
@@ -39,6 +41,131 @@ function commandArgs(command) {
 
 function run(command, args, cwd = ROOT, options = {}) {
   return spawnSync(command, args, { cwd, encoding: "utf8", shell: false, ...options });
+}
+
+// 给「捕获式执行的断言」打一句回执用：取它输出的最后一行（这些测试的总结行都在最后）。
+// 没有输出必须明说，不能打印一个空行——空行在 sweep 日志里和「这条根本没跑」长得一模一样。
+function receiptLine(stdout) {
+  const lines = String(stdout || "").split("\n").map((line) => line.trim()).filter(Boolean);
+  if (!lines.length) return "（无输出：这份断言不打总结行，回执只证明它退出 0）";
+  return lines[lines.length - 1].slice(0, 200);
+}
+
+// 注册表自检：把本文件里「登记要跑的断言」的四处清单读一遍，两个方向都查——
+// 凡指到不存在的文件就一次性报全，凡盘上有断言而本文件没有一处执行它也报全。
+//
+// 为什么要有这一段：2026-10-13 之前，下面三个执行循环和 scriptFiles 对缺失文件都只 console.warn，
+// 而 `npm run check` 照样打 `book-video checks: ok`。结果 5 份 .mjs 断言**在本仓库从来没有过**
+// （test-title-normalization / test-body-timings / test-env / test-subtitle-punctuation /
+// smoke-timing-fallback，`git log --all --` 各路径为空），登记了十几年也没人发现——一条永远不会
+// 存在的注册指向的正是「这条口径有测试守着」这个承诺本身。warn 是把承诺写在日志里然后跳过。
+//
+// 一次性报全而不是 throw 在第一个：AGENTS.md 已经数过一次 fail-fast 遮住多少个下游红，
+// 缺失注册同样会成串出现（补一个就少一个，逐个报等于让人跑五遍）。
+//
+// 扫描式自己也可能空转（正则没命中 → 检查了 0 条 → 全绿），所以这里对**扫描到的数量**有下限：
+// 三段执行循环、每段至少一条、scriptFiles 至少一条，任一不满足就是量具失效，直接红。
+// 命中形状但形状本身变了（比如新增第四段循环）只会让数字变大，绿行如实打印这四个数，
+// 缩了注册的人必须解释为什么。
+{
+  const self = fs.readFileSync(path.join(ROOT, "scripts/check.mjs"), "utf8");
+  // 扫描全部在**抹掉注释之后**的源码上做（实现与它的回归见 scripts/lib/check-source-scan.mjs）。
+  // 本文件有几百行说明文字点名某份回归，拿原文匹配等于让「把承诺写成一句注释」通过门禁。
+  const sites = executionSites(self);
+  const code = stripComments(self);
+  if (sites.loopCount < 3) {
+    throw new Error(`注册表自检空转：只扫到 ${sites.loopCount} 段执行循环（下限 3 段——`
+      + "写死实测段数会变成下一条过期陈述：2026-10-13 一天内实测从 3 涨到 4 又并回 3，"
+      + `段数只许 ≥ 下限，绿行如实打印实测的 ${sites.loopCount} 段）——`
+      + "要么循环写法变了（scripts/lib/check-source-scan.mjs 的 LOOP_SHAPE 必须跟着改，否则它检查不到任何东西），要么注册表被拆掉");
+  }
+  const loopPaths = sites.loopPaths;
+  for (const [index, paths] of sites.loops.entries()) {
+    if (!paths.length) {
+      throw new Error(`注册表自检空转：第 ${index + 1} 段执行循环没扫到任何 ["标签", "路径"] 对`);
+    }
+  }
+  const scriptBlock = code.match(/const scriptFiles = \[([\s\S]*?)\];/);
+  if (!scriptBlock) throw new Error("注册表自检空转：找不到 scriptFiles 清单");
+  const syntaxChecked = [...scriptBlock[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  if (!syntaxChecked.length) throw new Error("注册表自检空转：scriptFiles 清单里一条都没有");
+  const registered = [...loopPaths, ...syntaxChecked];
+
+  const missing = registered.filter((file) => !fs.existsSync(path.join(ROOT, file)));
+  if (missing.length) {
+    throw new Error(
+      `${missing.length} 条断言注册指向不存在的文件（共登记 ${registered.length} 条）：\n`
+      + missing.map((f) => `  · ${f}`).join("\n")
+      + "\n要么把它补上，要么连同它声称守着的那条口径一起把登记撤掉——"
+      + "留一行 warn 等于对着这条口径说「有测试守着」，而它谁也没守（2026-10-13 就是这么发现 5 份从没存在过的 .mjs 断言的）。",
+    );
+  }
+
+  // ── 反方向：盘上躺着一份断言，而本文件没有任何一处**执行**它 ────────────────────
+  // 上面那半只封住「登记了却没有文件」。镜像的一半是「文件有了却没人跑」：它能通过 `node --check`、
+  // 手跑是绿的、sweep 里一次都不执行，日志照样 `checks: ok`。补那 5 份断言的同一天扫出来的就是这个形状
+  //（scripts/tests 下 42 份里有 1 份 check.mjs 一个字都没提）。只查「登记→存在」的门禁，对这一半永远无声。
+  //
+  // 「执行」只认三种写法，全部是本文件里真实存在的调用形状（识别实现只有一份，在 lib 里，回归在
+  // scripts/tests/test-check-source-scan.mjs）：各段循环的 ["标签","路径"] 对 / run(...) 直调 /
+  // 变量声明且那个变量真的进了 run()。**注释里提到不算，只 `const x = "…"` 而没人 run(x) 也不算**——
+  // 后者正是本文件 apTestFile 那一类「只读源码 token 的静态证人」的形状，它们同时登记在循环里，
+  // 测试第 3 段钉的就是「静态钉 token 的那几份必须另有执行腿」，不是把它们放过。
+  const executed = sites.executed;
+
+  const onDisk = fs.readdirSync(path.join(ROOT, "scripts", "tests"))
+    .filter((file) => /\.(?:mjs|py)$/.test(file))
+    .map((file) => `scripts/tests/${file}`)
+    .sort();
+  // 下限防的是扫描式自己空转：目录名或后缀口径一变，这里扫到 0 个文件，「没有孤儿」就成了假绿。
+  // 只许涨不许塌——新增断言永不触发，删掉/挪走 20 份才会。
+  if (onDisk.length < 20) {
+    throw new Error(`注册表自检空转：scripts/tests 只扫到 ${onDisk.length} 份断言（下限 20）——`
+      + "目录名或文件后缀口径变了，这半条门禁等于没跑");
+  }
+  // 执行点集合也要下限：三条识别形状全断时 executed 是空集，`onDisk` 里每一份都会被判成孤儿——那是响红，
+  // 暂时不难受；真正难受的是反过来「onDisk 也扫空」两头同时失效。这里钉绝对下限，让它必须先红一次。
+  if (executed.size < 20) {
+    throw new Error(`注册表自检空转：只认出 ${executed.size} 个执行点（下限 20）——`
+      + "scripts/lib/check-source-scan.mjs 的三条识别形状至少断了一条，这条门禁正在对着一个空集合做判断");
+  }
+  // 在建名单：并行会话写了一半、健康夹具还判红的回归。登记它等于把别人的在建变成全库红，
+  // 所以每一条必须写理由，且由下面的 staleness 检查强制撤销——文件消失或真的登记了还留在名单里就红。
+  const inFlightTests = [
+    // 2026-10-13：scripts/tests/test-publish-caption.py 曾挂在这里（发布文案门与回归由并行会话
+    // 同日分两段写，夹具的「健康一期」当时 136/96 字低于 150 下限，登记会把在建当成交付缺陷）。
+    // 夹具已补足、断言已接进执行循环，按这条豁免自己写的撤销条件删掉本条。
+    // 名单保持可写：下一份「文件有了、还没接进循环」的并行回归仍然需要这条豁免形状，
+    // 而它必须附理由并由上面的 staleness 检查强制撤销。
+  ];
+  const inFlightFiles = new Set(inFlightTests.map((entry) => entry.file));
+  for (const entry of inFlightTests) {
+    if (!entry.reason || entry.reason.length < 20) {
+      throw new Error(`在建名单里的 ${entry.file} 没写理由：豁免必须可归因，否则它就是一次性的掩人耳目`);
+    }
+    if (!onDisk.includes(entry.file)) {
+      throw new Error(`在建名单过期：${entry.file} 已不在盘上——把它从 inFlightTests 里删掉`);
+    }
+    if (executed.has(entry.file)) {
+      throw new Error(`在建名单过期：${entry.file} 已经接进执行循环了——撤销这条豁免，让门禁真的守它`);
+    }
+  }
+  const neverRun = onDisk.filter((file) => !executed.has(file) && !inFlightFiles.has(file));
+  if (neverRun.length) {
+    throw new Error(
+      `${neverRun.length} 份断言在盘上但 check.mjs 没有任何一处执行它（共 ${onDisk.length} 份，已执行 ${executed.size} 条）：\n`
+      + neverRun.map((f) => `  · ${f}`).join("\n")
+      + `\n把它接进上面几段执行循环之一（本轮实测 ${sites.loopCount} 段），或（并行会话在建）写进 inFlightTests 并附理由。`
+      + "一份从不被 sweep 执行的断言，和一条口径没有测试等价——2026-10-13 那 5 份「登记了却没有文件」"
+      + "的反面就是这个形状：文件有了、手跑是绿的、sweep 一次都没跑它。",
+    );
+  }
+  for (const entry of inFlightTests) {
+    console.log(`⚠️ 在建断言（本轮不执行，登记后请撤销豁免）：${entry.file}`);
+  }
+  console.log(`Assertion registry: ${sites.loopCount} 段执行循环 / ${loopPaths.length} 条要跑`
+    + ` + ${syntaxChecked.length} 条语法检查，全部在盘；`
+    + `scripts/tests 下 ${onDisk.length} 份断言全部有执行点（在建豁免 ${inFlightTests.length} 份）`);
 }
 
 // 拿渲染锁再跑一条命令（2026-10-08《昆虫记》ENOTEMPTY 的另一半）。
@@ -74,6 +201,10 @@ for (const file of scriptFiles) {
 }
 if (missingScripts.length) {
   // 离线工作副本（Obsidian 同步目录）可能缺 scripts/tests/*.mjs：只告警，不因此跳过后面的规则门禁。
+  // 注意这条 warn 现在基本走不到——上面「注册表自检」那一段已经先对同一批路径抛红了，
+  // 那是有意的：登记一条断言＝声明「这个口径有人守」，缺文件必须红，不能只留一行 warn
+  //（2026-10-13 那 5 份从来没有过的 .mjs 断言就是被这种 warn 藏住的）。这里保留是为了
+  // 「登记形状变了、自检没扫到」的兜底，而不是给静默放行留第二个口子。
   console.warn(`Warning: skipped missing scripts: ${missingScripts.join(", ")}`);
 }
 
@@ -635,6 +766,15 @@ for (const [tool, why] of [["scripts/snap-body-timings-vad.py", "修轴脚本"],
         + "被撤形状（行尾编 0.20s / 行首全体贴同一锚点 / 键写成 first.b+off）回来时没人判红");
     }
   }
+  // 真片证人一样会随交付归档消失（《少年》2026-10-13 就没了，字幕切条闸的控制组当场 TypeError；
+  // 《少年维特的烦恼》同一天让 scene-map 回归只剩一条臂）。所以「缺席打 🔒、两臂全缺就判红」
+  // 这条非空转保证也得钉住：少了它，⑥⑩ 一起失踪时测试仍报绿，而那正是「判不了＝没测不是红」。
+  for (const token of ["real_arms", "无从跑起", "🔒"]) {
+    if (!anchorTest.includes(token)) {
+      throw new Error(`test-positional-anchor.py 少了 ${token}：真片臂可以整批被搬出 episodes/ 而测试照旧绿，`
+        + "真音频上的对照变成没人看着的断言");
+    }
+  }
   // ③ 近音锚点算 flags 但不灌 matched，否则日志里的「命中 X/Y」和历史不可比。
   if (!lib.includes("return times, etimes, flags, sum(b.size for b in blocks)")) {
     throw new Error(`${libPath} 的 matched 不再是纯字面命中数：近音对位灌进命中数，`
@@ -686,6 +826,12 @@ for (const [tool, why] of [["scripts/snap-body-timings-vad.py", "修轴脚本"],
     ["--no-acoustic-floor", "旧口径对照开关没了：这套口径没法 A/B"],
     ["SILENCE_NOISE_DB", "打印的噪声底不是从 lib 取的：lib 改了而报告还在写旧数"],
     ["sil=sil", "门禁把证人交给建窗那一步的动作没了：恢复判据无从执行"],
+    // 2026-10-14《死魂灵》：brief.scriptVersion 记 'v1' 而 CSV 与轴都是 'A' → 0 行 →
+    // 这一门在「ASR 字序命中」那行除零崩掉，渲前轴闸把 traceback 报成「判决措辞变了」，
+    // 红话把人指向对账脚本而该改的是 brief。两条各钉一个：拒量的分支和在除零之前收口。
+    ["VERSION_TOKEN", "「版本对不上」这一族重新会掉进除零：0 行文案被当成判决措辞漂移报出去"],
+    ["if not rows:", "读到 0 行文案时不再单独成一条红并点名改 brief，而是继续往下跑"],
+    ["hit_rate", "命中率重新直接 matched/total：ASR 一个 token 都没给时这门会崩，而不是报「无从计算」"],
   ]) {
     if (!gate.includes(tok)) {
       throw new Error(`check-caption-speech-align.py 不再出现 "${tok}"：${why}`);
@@ -1502,6 +1648,161 @@ for (const rel of ["scripts/lib/book-cover.json", "scripts/lib/book_cover.py",
   }
 }
 
+// ── 第 15 道交付门禁：发布文案（2026-10-13，127 条视频号数据复盘）────────────────
+// 前十四道量的全是像素，而账号 9→10 月掉的是转化：观看深度没动（64.9s→64.8s、完播
+// 11.65%→12.00%），分享率 1.16%→0.75%、转粉率 0.74%→0.33%、有评论条数占比 42%→12% 一起塌。
+// 同期唯一变的是发布文案——中位 453 字（81% 描述写着《书名》）变成 36 字一句金句加标签串
+// （6% 含书名）。它从来不是流程的产物：建门当天全库 122 期 brief.json 里 publish_caption* 0 个。
+// 所以这道门接线本身要被钉住：判决脚本、汇总里的名字、names.append 的形状、--delivery 口径，
+// 少钉一样，「把第 15 道门摘掉」就只需要删一行而没有任何一处会红。
+{
+  if (!fs.existsSync(path.join(ROOT, "scripts/check-publish-caption.py"))) {
+    throw new Error("scripts/check-publish-caption.py 不见了：发布文案规则没有可执行的真源，"
+      + "而 check-episode-delivery.py 的第 15 道门会当场炸在 subprocess 上");
+  }
+  if (!/发布文案核对/.test(deliveryWrapper)) {
+    throw new Error("check-episode-delivery.py 的 GATE_NAMES 少了「发布文案核对」："
+      + "汇总行会少一道，而打印的「N 道交付门禁全部通过」就成了错数");
+  }
+  if (!/names\.append\(GATE_NAMES\[14\]\)/.test(deliveryWrapper)) {
+    throw new Error("check-episode-delivery.py 不再把第 15 道门无条件计入汇总："
+      + "GATE_NAMES 有 15 个名字而 names 只拼到 14，zip 会静默丢掉最后一对，"
+      + "「发布文案核对」就变成一道只在 results 里跑、永远不印、也没人读它结论的门");
+  }
+  if (!/check-publish-caption\.py",\s*--delivery|publish-caption",\s*\[PY/.test(deliveryWrapper)) {
+    throw new Error("check-episode-delivery.py 的第 15 道门不再按 --delivery 口径调那道判据："
+      + "盘点口径（--all 那套）会把存量期的 ⚠️ 当结论、把未成片期的交付红漏掉，"
+      + "而交付汇总读的是退出码与末行");
+  }
+  // 单真源：判决只在 check-publish-caption.py 一处，交付包装里不许重述一遍「文案够不够长」。
+  if (/CAPTION_MIN_CHARS|150 字/.test(deliveryWrapper)) {
+    throw new Error("check-episode-delivery.py 里出现了发布文案的阈值：长度下限只有 "
+      + "scripts/check-publish-caption.py 一份，包装脚本抄一份就变成第二个口径，"
+      + "改判线的人只会找到先红的那一个");
+  }
+  if (!ruleSays("check-publish-caption.py")) {
+    throw new Error("规则文档没有点名 scripts/check-publish-caption.py：发布文案规则无法被执行");
+  }
+  if (!ruleSays("publish_caption_mode")) {
+    throw new Error("规则文档没有点名 publish_caption_mode：短版例外要落盘这条只活在代码里，"
+      + "下一个人会把 10 月那种 36 字金句当默认形态重发");
+  }
+}
+
+// ── 第 16 道周度门禁：发布后转化指标（2026-10-13 建，2026-10-14 接线）──────────────
+// 上面那道门量的是「文案在不在盘上」，而 127 条复盘掉的三项指标（分享率 1.16%→0.75%、
+// 转粉率 0.74%→0.33%、有评论条数占比 42%→12%）是**发布之后**外部系统才回来的数，
+// 交付那一刻根本看不见。所以这道门不拦交付、只标 ⚠️，读 data/频道数据-按期匹配.csv，
+// 在周报式扫库时点名低转化期。
+// 为什么 2026-10-14 才接线：建门当天它三处都没接上——没有调用点（`grep check-channel-metrics
+// scripts/` 只有它自己的 docstring 和那份回归）、docs/rules 没点名它、那份回归也没有执行点。
+// 这就是本仓库反复翻车的那一族：「规则只写在文档/脚本里，没有任何调用点」（伪影门 2026-10-03、
+// 段归属 2026-10-06 都是同一形状）。一个没人调用的门不需要删就直接失效，所以这里既跑它、
+// 也用 ruleSays 钉它进规则本体、还用下面那段把它的回归接进 sweep。
+const channelMetricsFile = "scripts/check-channel-metrics.py";
+if (!fs.existsSync(path.join(ROOT, channelMetricsFile))) {
+  throw new Error(`${channelMetricsFile} 不见了：第 16 道周度门禁没有可执行的真源，`
+    + "低转化期就只剩周报里的一句口头提醒，而 12 月那批 A/B 结论没有数据侧的守门人");
+}
+{
+  // 三种退出形状要分开判，因为它们的修法相反：
+  //   · exit 0 —— 要么全绿、要么打了 ⚠️（这道门对低转化一律 ⚠️ 不拦交付：72% 的存量条都零评论，
+  //     一红灯会炸全库，那正是本仓库反复说的「红话指向错误的 remedy」）；
+  //   · exit 1 且末行是「读不到 data/频道数据-按期匹配.csv」—— 私有导出没在盘上。这**不是缺陷**：
+  //     AGENTS.md 验收要求干净 clone 在没有微信读书/频道数据时也能初始化，所以这里只能打
+  //     ⚠️ 判不了（看得见、不算过），不许红；
+  //   · 其余非零 —— 仪器自己坏了（列名漂了、崩在 safe_float 上）。判不了＝没测不是红，但
+  //     「没测」也不许写成「测过且通过」，所以坏了必须红，且红话要写「修仪器」而不是「摘门」。
+  const channelGate = run("python3", [channelMetricsFile]);
+  const channelOut = `${channelGate.stdout || ""}${channelGate.stderr || ""}`.trim();
+  const noExport = /读不到 data\/频道数据-按期匹配\.csv/.test(channelOut);
+  if (channelGate.status !== 0 && !noExport) {
+    throw new Error(`${channelMetricsFile} 执行失败（退出码 ${channelGate.status}）：`
+      + "这道门对 ⚠️ 一律返回 0，对「没有导出」返回 1 并打那句红话，"
+      + "所以其余非零只可能是仪器坏了——"
+      + `修复仪器本身，不许把它从 sweep 里摘掉：\n${channelOut}`);
+  }
+  if (noExport) {
+    console.log("⚠️ 转化指标（第 16 道）判不了：没有频道导出，"
+      + "跑 python3 scripts/link-channel-metrics.py --match 拉回来即开始亮灯（私有数据，"
+      + "干净 clone 就是这一支，所以不红）");
+  } else {
+    const flaggedLines = channelOut.split("\n").filter((l) => /^\s*⚠️/.test(l));
+    console.log(`[channel-metrics] ${channelOut.split("\n")[0] || "（无输出）"}`
+      + (flaggedLines.length ? `\n${flaggedLines.join("\n")}` : ""));
+  }
+}
+if (!ruleSays(channelMetricsFile)) {
+  throw new Error(`规则文档没有点名 ${channelMetricsFile}：第 16 道门的阈值（分享率/转粉率/零评论）`
+    + "与它的 ⚠️-不拦交付口径就只活在代码里，下一个人只会看到一堆没有出处的警告行");
+}
+
+// 第 17 道：已交付期的封面必须有钩子行（2026-10-14《三剑客》）。判据本体在
+// hook-backfill-status.cover_cell()，这道门只是把**范围**从钉死的 113 期回补名单换成
+// 「盘上有成片的所有期」——那唯一一处判据从没为名单外的已交付期跑过一次，而
+// audit-hook-deliverables 的封面那一格只看 PNG 在不在，图在就绿，可图上只有两行字。
+// 它红，因为修法便宜且不碰像素：写 brief.json + 重出封面，不重渲成片。
+{
+  const coverHookFile = "scripts/check-cover-hook-line.py";
+  if (!fs.existsSync(path.join(ROOT, coverHookFile))) {
+    throw new Error(`${coverHookFile} 不见了：第 17 道门没有可执行的真源，`
+      + "「已交付封面必须有钩子行」就只剩 docs/rules/publish-caption.md 第九节的一句话");
+  }
+  const coverHookGate = run("python3", [coverHookFile]);
+  const coverHookOut = `${coverHookGate.stdout || ""}${coverHookGate.stderr || ""}`.trim();
+  if (coverHookGate.status === 2) {
+    throw new Error(`${coverHookFile} 报「空扫描」（退出码 2）：${coverHookOut.split("\n")[0]}——`
+      + "一道一期都没判到的门和没有这道门是同一件事，判不了＝没测，不许读成绿");
+  }
+  if (coverHookGate.status !== 0) {
+    throw new Error(`${coverHookFile} 判红：已交付的封面缺钩子行\n${coverHookOut}`);
+  }
+  console.log(`[cover-hook-line] ${coverHookOut.split("\n")[0]}`);
+}
+if (!ruleSays("scripts/check-cover-hook-line.py")) {
+  throw new Error("规则文档没有点名 scripts/check-cover-hook-line.py：第 17 道门的两条规则"
+    + "（字段必须落 brief.json、封面不得早于本期钩子文案）与「legacy 在已交付侧算成品、"
+    + "在回补名单侧不算」这一支差别就只活在代码里");
+}
+
+// scene-map 行锚点全库对账（2026-10-14《源泉》）：文案合并/删行之后，越界/覆盖/同图/缺文件四条
+// 全绿而中间每个切点都错一行——图层表用整数说话，整数看不出它对着的文字变了。判据本体在
+// scripts/lib/scene_map_anchors.py，渲前闸、盖章工具、图层表生成器三份共用。
+// 这里跑的是 `--check`（只读不写）：它把「每一期图层行号还各自对着当初那行吗」在**扫描时**问一遍，
+// 而不是等到某一期要重渲时才由渲染链问。两道非空转：一期都没扫到要红，扫到了而存在无锚点的期数也要红
+// ——后者正是「判不了」被写成绿的形状（同第 16/17 道门口径）。
+{
+  const anchorTool = "scripts/stamp-scene-map-anchors.py";
+  if (!fs.existsSync(path.join(ROOT, anchorTool))) {
+    throw new Error(`${anchorTool} 不见了：锚点只剩判的一半——没有盖章那一份，`
+      + "新图层表永远处在「判不了」那一侧，而这一侧不许算绿");
+  }
+  const anchorGate = run("python3", [anchorTool, "--check"]);
+  const anchorOut = `${anchorGate.stdout || ""}${anchorGate.stderr || ""}`.trim();
+  if (anchorGate.status !== 0) {
+    throw new Error(`${anchorTool} --check 判红：已盖锚点的图层表与当前行文对不上`
+      + `（按红话里的行号改回去，别盖章覆盖）\n${anchorOut}`);
+  }
+  const am = anchorOut.match(/(\d+) 期有 scene-map：(\d+) 期已盖/);
+  if (!am) {
+    throw new Error(`${anchorTool} --check 没报出对账行（判据换了措辞还是根本没跑）：`
+      + `\n${anchorOut.slice(0, 200)}`);
+  }
+  if (Number(am[1]) === 0) {
+    throw new Error("锚点对账扫到 0 期：episodes/ 里没有一份 scene-map.json —— 这一族判据"
+      + "一次都没落过地，报绿是假绿");
+  }
+  if (am[1] !== am[2]) {
+    throw new Error(`锚点对账：${am[2]}/${am[1]} 期有锚点可判，其余 ${Number(am[1]) - Number(am[2])} 期`
+      + `判不了（判不了＝没测，不是绿）。跑 python3 ${anchorTool} --all 补上`);
+  }
+  console.log(`[scene-map-anchors] ${anchorOut.split("\n")[0]}`);
+}
+if (!ruleSays("scripts/lib/scene_map_anchors.py")) {
+  throw new Error("规则文档没有点名 scripts/lib/scene_map_anchors.py：锚点存整行而不是前缀、"
+    + "按本期渲染的文案版本比对、「改字重盖章 / 改行改行号」两条红话的差别就只活在代码里");
+}
+
 // 全仓字幕轨审计：每一期的上屏文本都要真的被零标点规则查过一遍。历史两期先豁免——
 // 《一个陌生女人的来信》字幕轨是老渲染器出的（无 display），《围城》是 /tmp/围城_tpl 里
 // 的陈旧 cap-*.png 计数不符（画面无违规）。**新增期一律判红**，别再让它们靠"没人跑审计"过关。
@@ -1516,6 +1817,77 @@ if (punctGate.status !== 0) {
     throw new Error(`上屏标点审计未通过：${offenders.join(", ")}`
       + `（历史豁免名单：${[...PUNCT_EPISODE_BASELINE].join("、")}）\n`
       + lines.filter((l) => /^\s*(❌|·|\[audit\])/.test(l)).join("\n"));
+  }
+}
+
+// 字幕切条闸（渲前，不是渲后审计）。《少年》2026-10-11：正文有 18 条字幕上屏 3~4 行，
+// 而画字那一步的 `[lines]` SystemExit 是在背景合成 + 封面帧序列跑了约 9 分钟之后才撞上的——
+// 本期没有成片、六道门禁一帧没跑。这道闸把同一个判断换成 3 秒。
+// 判据不是第二份实现：check-caption-rows.py 按 AST 锚从渲染器源码里切出 caption_lines /
+// caption_display / pack_units 再跑，锚找不到时非零退出——「闸读不到判据」不能算绿。
+const captionRowGate = run("python3", ["scripts/check-caption-rows.py", "--all"]);
+if (captionRowGate.status !== 0) {
+  const out = `${captionRowGate.stdout || ""}${captionRowGate.stderr || ""}`.trim().split("\n");
+  throw new Error(`字幕切条闸未通过（有字幕条超过 displayMaxLines 行，渲染会在 build_caption 里炸）：\n`
+    + out.slice(-24).join("\n"));
+}
+// 控制组：把已经撤销的「分句只认标点」形状注回命名空间，证人必须重新跑红。
+// 没有这一段，这道闸在切条逻辑被改回去之后仍然全绿——那是「没测」，不是「过了」。
+// 证人按三档往下退（钉住的期 → 语料里同句形的期 → 脚本内置句形夹具），并且每一档都打印
+// 用的是谁：《少年》2026-10-12 被用户整目录搬出 episodes/，旧版把证人硬编码成那两个期目录，
+// 于是一次普通归档让 self-test 抛 TypeError，而 check.mjs 在第一个 throw 就停——它下面所有
+// 门禁从此没人跑过。夹具那一步每次 --self-test 都判，不许因为真实证人在就跳过。
+const captionRowSelf = run("python3", ["scripts/check-caption-rows.py", "--self-test"]);
+if (captionRowSelf.status !== 0) {
+  throw new Error("字幕切条闸的控制组没过：\n"
+    + `${captionRowSelf.stdout || ""}${captionRowSelf.stderr || ""}`.trim().split("\n").slice(-12).join("\n"));
+}
+// 钉住三档证人本身：只钉「跑了一次 self-test」不够——把夹具删掉、或者让替代证人不再按句形
+// 筛（两种旧形状对任何长行都红，随便抓一期当证人＝控制组悄悄变成另一件事的测试），self-test
+// 的退出码照样好看。所以钉的是这两段判据还在不在。
+const capsRowsSelfSource = fs.readFileSync(
+  path.join(ROOT, "scripts/check-caption-rows.py"), "utf8");
+const fixtureCases = (capsRowsSelfSource.match(/"fixture":\s*\[/g) || []).length;
+if (fixtureCases < 2) {
+  throw new Error(`check-caption-rows.py 的 CONTROL_CASES 只剩 ${fixtureCases} 个内置句形夹具（应 2）：`
+    + "已交付的期会被搬出 episodes/，夹具没了两道句形的控制组就没了兜底证人"
+    + "（《少年》2026-10-12 实测，见 docs/rules/subtitles.md）");
+}
+if (!capsRowsSelfSource.includes("shape_texts(machinery(brief), texts, shape)")) {
+  throw new Error("check-caption-rows.py 的替代证人不再按句形筛：语料里任何一期都能顶替"
+    + " phrase 证人，控制组会悄悄改成另一件事的测试（2026-10-12 三档证人）");
+}
+// 静态钉住切条修复与预检退出码：回退这两处，等于把《少年》那 9 分钟空跑重新装回管线。
+const fallbackCapsSource = fs.readFileSync(
+  path.join(ROOT, "scripts/render_scene_map_template_fallback.py"), "utf8");
+for (const [token, why] of [
+  ["def split_phrase_clause", "phrase 模式 CSV 的空格不再是切条边界：整行会被按字数拦腰切开"],
+  ["def _cut_to_line_budget", "没有人切单个无标点长段：它直接顶穿 displayMaxLines"],
+  ["def clause_pieces", "pack_units 回到只认 CLAUSE_RE 标点的形状"],
+  ["raise SystemExit(1 if fatal else 0)",
+    "CAPS_ONLY 预检回到只打印不拦（退出码恒 0，playbook 那句「渲染前必须跑」再次成为摆设）"],
+]) {
+  if (!fallbackCapsSource.includes(token)) {
+    throw new Error(`render_scene_map_template_fallback.py 不再包含「${token}」：${why}`
+      + `（《少年》《病隙碎笔》2026-10-11 实测，见 docs/rules/subtitles.md）`);
+  }
+}
+if (!ruleSays("scripts/check-caption-rows.py")) {
+  throw new Error("规则文档没有点名 scripts/check-caption-rows.py：渲前切条闸无法被发现");
+}
+// 接线本身也要钉住（2026-10-11）。docs/rules/subtitles.md 写的不是「有这么一个脚本」，而是
+// 「它是每期的渲前闸，接在 scripts/render-hook-batch.sh 里」——那句话的可执行形式就在这里：
+// 函数定义、链上的调用、以及它被拦下时记进日志的闸名。少了任何一件，规则文档就在描述一条
+// 不存在的接线，而《少年》那 18 条 3~4 行字幕会重新等到渲染九分钟之后才炸。
+const hookBatchForCaps = fs.readFileSync(
+  path.join(ROOT, "scripts/render-hook-batch.sh"), "utf8");
+for (const [token, why] of [
+  ["caps_guard() {", "渲前字幕行数闸从批渲染链上消失：判据还在，但没人开渲前问它一句"],
+  ['elif ! caps_guard "$EPISODE"', "链上不再调用它（顺序必须是 scene_map_guard 之后、预览之前）"],
+  ['SKIP_REASON="字幕切条闸"', "日志里认不出本期是被哪道闸拦的：四道闸共用 PREV 为空这一个信号"],
+]) {
+  if (!hookBatchForCaps.includes(token)) {
+    throw new Error(`render-hook-batch.sh 不再包含「${token}」：${why}`);
   }
 }
 
@@ -1906,16 +2278,37 @@ if (hookOpenerGate.status !== 0) {
 for (const [label, testFile] of [
   ["Title normalization", "scripts/tests/test-title-normalization.mjs"],
   ["Body timing", "scripts/tests/test-body-timings.mjs"],
+  // 兜底建轴那份原来只挂在 scriptFiles（:30）里，那里是 `node --check` 的语法清单，跑都不跑。
+  // 语法检查不是测试：一份从不执行的断言和没有断言等价，所以它必须出现在这个执行循环里。
+  // 它和上面那条共用 lib/body-timings.mjs，钉的是精确路径抛异常之后接住的那一半（时长估算）。
+  ["Timing fallback", "scripts/tests/smoke-timing-fallback.mjs"],
   ["Environment parsing", "scripts/tests/test-env.mjs"],
   ["Subtitle punctuation", "scripts/tests/test-subtitle-punctuation.mjs"],
   ["Intro page pairing", "scripts/tests/test-intro-page-pairing.mjs"],
+  // 注册表自检自己的扫描式。它守的是「这条门禁还量不量得出东西」——判定与钉住它的 token 同批落地，
+  // 缺一条这种自检就成了「写了一份测试但没人跑」的那个形状本身。
+  ["Registry scan", "scripts/tests/test-check-source-scan.mjs"],
+  // 上一份量「认得出形状」，这一份量「门禁在真实变异上会不会翻红」。两段合起来才挡住同一族失效：
+  // 扫到 0 条 → 0 == 0 → 全绿。它原先只活在 tmp/registry-mutation-1013.mjs，而 tmp/ 是渲染中间产物，
+  // 回收阶段一扫就没了——「写过一次证明」不是「一直有人证明」。
+  ["Registry mutation", "scripts/tests/test-registry-mutation.mjs"],
 ]) {
   if (!fs.existsSync(path.join(ROOT, testFile))) {
-    console.warn(`Warning: skipped missing test ${testFile}`);
-    continue;
+    // 上面的注册表自检已经把所有登记路径查过一遍，走到这里只可能是它没认出的写法（新形状的循环）。
+    // 那更不能 warn：登记的存在本身就是「这条口径有人守」的声明。
+    throw new Error(`注册的断言 ${testFile} 不在盘上（注册表自检没扫到它，说明它在一个新形状的清单里——`
+      + "把那段扫描式一起补上）。补上这份断言，或连同它守着的那条口径撤掉登记。");
   }
   const testResult = run(process.execPath, [testFile]);
-  if (testResult.status !== 0) throw new Error(testResult.stderr || `${label} test failed`);
+  if (testResult.status !== 0) {
+    // 报错必须带上 stdout：这六份断言把 ❌ 的**名字**打在 stdout 上，只报 stderr 等于报「挂了」而不报挂在哪。
+    throw new Error(`${label} 回归未通过 ${testFile}：\n${testResult.stdout || ""}${testResult.stderr || ""}`);
+  }
+  // 一句回执。这一段和第三段不一样：第三段用 stdio inherit 把测试全过程打进日志，而这里子进程的输出
+  // 全被捕获，绿灯原本一个字都不留——「跑没跑」在 sweep 日志里看不出来，只能读代码。2026-10-13 那
+  // 5 份断言靠的是「文件在不在」，而文件在、跑不起来、跑起来没人看，是同一种洞的三个形状。
+  // 从此日志里少一行 ✓ 就是那条断言这一轮没被执行。
+  console.log(`✓ ${label} ｜ ${receiptLine(testResult.stdout)}`);
 }
 
 // 突发阈值的整数帧口径（2026-10-04《一个陌生女人的来信》行 28「不断等待。」）：
@@ -2015,15 +2408,84 @@ for (const [label, testFile] of [
   // 包括 107 对 106 这个边界本身（夹具漂了就必须红），以及「降级不是否决」「作者字段留空
   // 不能靠 `"" in x` 拿 2 档」两条反向。
   ["Book cover edition", "scripts/tests/test-book-cover-edition.py"],
+  // 溯源行的**按段查询**（2026-10-11《少年维特的烦恼》）：`prompt_row()` 的裸文件名兜底以前会把
+  // 钩子段那行 `images-hook/atmosphere-1.png` 借给正文段的 `atmosphere-1.png`——两段都从 1 起编号，
+  // 借走之后一次跨段借用同时造出假红（❌「两段用了同一张 Pexels 照片」，两张毫无关系）和漏判
+  // （正文真正没有溯源行的那两张被顶了名，连 ⚠️ 都不报）。修掉借行又暴露 mode 只看全期半数，
+  // 于是「正文 8 张历史 AI 图 + 钩子 2 张新管线图」的期整期掉进 compat，钩子那两张刚认证的照片
+  // 一张都不查。六组断言：事故现场、同一份夹具上重放被撤写法（假红必须回来）、compat 陷阱、
+  // 两段齐备的健康产物、真·同图重复仍然判红、以及源码形状本身。
+  ["Provenance segment lookup", "scripts/tests/test-image-provenance-segment-lookup.py"],
+  // 草稿期的封面↔第二行复述（2026-10-12 第十三批 13 期起草）：`--plan` 把封面向口径交给
+  // `shipped_covers()`，而它只读各期 brief.json 的 `cover_hook`——草稿期那一格还没落盘（提升时才写），
+  // 于是 13 份新草稿的封面文案一个字都没查，末行照样打「✅ 无撞车」。写盘入口一直自己内联合并
+  // 草稿的 cover_hook，两个调用点各存一份口径，漂掉的正是草稿这一半，而这条规则存在的理由
+  // （封面读一遍、头五秒再听一遍就成复述）恰恰在起草时最便宜、最该查。修法是把合并收进
+  // `covers_for(books)` 一处，两个调用点共用；断言三头钉——旧口径必须**放走**一次真复述（把门的
+  // 瞎点钉住，防止有人把合并改回去）、新口径必须判红那 4 字、以及绿行与 --json 都得如实报
+  // 「N/M 期有文案可查」，判不了不许冒充通过。
+  ["Plan cover echo", "scripts/tests/test-plan-cover-echo.py"],
+  // 草稿期族统计：录音前的草稿如果也往「读书动作」「转述某句话」这些族里塞，
+  // 出货期会再次过载——--plan 只查同批彼此与已出货语料，不查草稿内部。
+  // 所以加 --draft-census 在写盘前也跑一遍。夹具必须复制 gate 到临仓再跑（
+  // DRAFTS 是 __file__ 相对定位的，不复制就跑真目录，下一个会话加了草稿就会变绿）。
+  ["Draft hook-census", "scripts/tests/test-draft-census.py"],
+  // 回收阶段的**在渲守卫**（2026-10-11 13:57 实测）：三个 render-hook-batch 正活着，而它们自己的
+  // tmp/<书名>_tpl 同时出现在 cleanup-tmp.mjs 的可释放名单里——那时唯一的判据是「这一期有已交付成片」,
+  // 可重渲一期已交付的片子恰好也满足它。删掉正在跑的 body-bg.mp4 毁掉的是那一次渲染，不是回收。
+  // 守卫读批渲染链机器写的认领文件 tmp/render-b3/claim/<书名>.pid；AGENTS.md 当时只能写「用 --only
+  // 自己避开」，那是靠人记得，现在它是判据。夹具用真·bash 活进程当持有者（写方 claim_owner 只认
+  // 还活着而且是 bash 的 pid，伪造一个 python pid 会测出生产里永不出现的形状），六组双向：点名必须
+  // 非零退出不删、干跑同样拒绝、全量时只跳过被认领的那一期而另一期照常回收、持有者退出后陈旧认领
+  // 不砖死清理、读不出 pid 的内容按「有人正认领」处理，以及把 liveClaim 调用点换成恒 null 的那一份
+  // 必须**逐个拒绝形状重现事故**：两个 --apply 都真删被认领期的 body.mp4，点名干跑则把那一期列进
+  // 「可释放」还退 0——那正是包装器读成「可以动手」的一行（证明前面几条断言有牙齿）。末组跨文件钉
+  // 路径：读方与写方的认领目录与文件名各按字面量核对——漂了守卫全盲而测试照样绿。
+  ["Cleanup claim guard", "scripts/tests/test-cleanup-claim-guard.py"],
+  // 进度表的**词汇方向**（2026-10-12 第十三批 13 期）：`next_stage()` 返回的是第一个没过的关卡的
+  // 键，所以「草稿在盘、用户还没批」的期键是 approved；NEXT_CN 旧写法直接 `dict(STAGE_CN, …)`
+  // 借状态词，汇总就打成「文案已批 13 期 / 文案草稿 0 期」，意思正好反过来。CSV 的 草稿状态 列
+  // 一直是 pending、一个字没错，而派工读的是汇总——下一步就会给一份没点头的文案配音、出图、出片。
+  // 动作词单独一份并一律以「待」开头，状态列继续用 STAGE_CN。逐标签核对而不是 substring 缺席
+  // （只查一个词的话，别的档漂回去看不见），外加把旧写法装回夹具副本必须重现那个误导标签。
+  ["Backfill stage vocab", "scripts/tests/test-backfill-stage-vocab.py"],
+  // 第 16 道周度门禁的回归（2026-10-13 写、2026-10-14 接线）。这份文件在盘上躺了一天而
+  // sweep 一次都没跑它——正是 10-13 那 5 份「登记了却没有文件」的反面形状：文件有了、
+  // 手跑 rc=0、没有任何执行点，于是注册完整性反向下限在 13:29 把它报出来。
+  // 它为什么必须跑而不是靠人手动：这道门的三项阈值、成熟度过滤（发布≥7天）、书名匹配
+  // 三处任一处被改弱，门就静默失效，而它只打 ⚠️、永远退 0，**没有任何下游会替它红**。
+  // 夹具自己搭 CSV（mkdtemp + --csv 指假数据），十三组对照两头都判：健康期绿、三种低转化
+  // 各自翻 ⚠️、三项同触发要出 3 条、不足 7 天与无书名要**跳出成熟样本**、成熟样本为 0
+  // 要退 0 打提示而不是红（判不了＝没测），混合队列要数得出 2 条成熟里 1 条全红。
+  ["Channel metrics", "scripts/tests/test-channel-metrics.py"],
+  // 上面那份回归证明「阈值/成熟度/零评论改了会红」，它证明不了的是**它自己还在被跑**：
+  // ⑪ 那条钉的是 check.mjs 里的文本形状，而文本在，调用可能被摘、调用在、门面可能被换成
+  // 一句注释——只看文件名一律绿。所以这一份把回归本体放进**变异后的副本**里重跑九次
+  // （切片改副本，生产一个字不动，口径同 test-registry-mutation.mjs），外加一条健康对照。
+  // 为什么证人必须进 sweep 而不是留在 tmp/：cleanup-tmp.mjs 会把仓库 tmp/ 当回收靶子删掉，
+  // 一份会被回收掉的证人等于没有证人（test-registry-mutation.mjs 最早就写在 tmp/ 里，
+  // 后来才搬进 scripts/tests/）。九条各自只认自己那一条对照编号翻红——红了别的臂＝没测这一手。
+  ["Channel metrics wiring", "scripts/tests/test-channel-metrics-wiring.py"],
+  // 第 17 道（已交付封面必须有钩子行）的十组对照（2026-10-14《三剑客》）。它必须跑的两个理由：
+  // ① 这道门的判据是从 hook-backfill-status.py **import** 来的，谁把 import 换成就地抄一份
+  //    mtime 比较，两份口径就会在下次改规则时只改一处——⑨ 那组钉的正是这件事；
+  // ② 这道门红，而红话必须指向正确的修法（写 brief + 重出封面，**不重渲**）。把「不重渲」
+  //    删掉的那次改动看起来只是精简文案，实际会把人引去白跑二十分钟机器并牵动已冻结的录音。
+  // 第 ⑧ 组用《三剑客》今天真发出去的那张封面当证人（目录被归档时印「无从跑起」而不是静默跳过）。
+  ["Cover hook line", "scripts/tests/test-cover-hook-line.py"],
 ]) {
   if (!fs.existsSync(path.join(ROOT, testFile))) {
-    console.warn(`Warning: skipped missing test ${testFile}`);
-    continue;
+    // 上面的注册表自检已经把所有登记路径查过一遍，走到这里只可能是它没认出的写法（新形状的循环）。
+    // 那更不能 warn：登记的存在本身就是「这条口径有人守」的声明。
+    throw new Error(`注册的断言 ${testFile} 不在盘上（注册表自检没扫到它，说明它在一个新形状的清单里——`
+      + "把那段扫描式一起补上）。补上这份断言，或连同它守着的那条口径撤掉登记。");
   }
   const testResult = run("python3", [testFile]);
   if (testResult.status !== 0) {
     throw new Error(`${label} test failed:\n${testResult.stdout || ""}${testResult.stderr || ""}`);
   }
+  // 同上面那段 .mjs 循环：这一段也是捕获式，绿了原本一个字不留。回执口径统一，日志里数得清跑了几条。
+  console.log(`✓ ${label} ｜ ${receiptLine(testResult.stdout)}`);
 }
 
 // 上面那条循环在文件缺失时只 warn（历史约定），所以「把封面口径的测试删掉」本身必须是红的。
@@ -2063,6 +2525,10 @@ for (const [token, why] of [
   ["s[0] > 0", "书名档为 0 的候选不再被滤掉：同作者的不同书会重新变成一张能上屏的错封面"],
   ["key=lambda s: s[:4]", "比较不再是逐档元组：维度重新被加成一个数，作者档就能买通书名档"],
   ["if na and ba and (na in ba", "作者字段的空值守卫消失：`\"\" in x` 为真，一条没填作者的书目拿到 2 档"],
+  ["def find_source_edition", "「候选 id == brief.source_book_id」这个谓词消失：同一本书的证据没有实现处"],
+  ["source_hit = find_source_edition(books, source_book_id)", "pick() 不再先认来源版次：《最后一片叶子》那次上屏会重演"],
+  ["brief.get(\"source_book_id\")", "main() 不再把 brief 的记录 id 交给打分：这一档在真实调用里根本不会被触发"],
+  ["edition_match=match", "旁证不再记录这期是靠 id 认的书还是靠书名猜的书：短路判错时人没有复核入口"],
 ]) {
   if (!editionScript.includes(token)) {
     throw new Error(`${editionScriptFile} 丢了 ${token}：${why}`);
@@ -2090,6 +2556,25 @@ for (const shape of withdrawnAdditive) {
     }
   }
 }
+// 2026-10-11《最后一片叶子》撤掉的形状：main() 只把书名/作者交给打分，来源版次的记录 id
+// 全程没被读。它的字面写法就是 `pick(books, title, author)`——新写法多一个 sid 实参，
+// 所以这个带右括号的 token 不会误伤 `pick(books, title, author, sid)`，
+// 也不会误伤 pick() 自己的签名（那是 `def pick(books, title, author, source_book_id="")`）。
+const withdrawnNoSourceTier = ["hit = pick(books, title, author)"];
+for (const shape of withdrawnNoSourceTier) {
+  if (editionScript.includes(shape)) {
+    throw new Error(`${editionScriptFile} 里出现了被撤的取值形状 ${shape}：`
+      + "brief.source_book_id 没进打分，同名不同书（《最后一片叶子》/ 小洛）会重新压过带副标题的来源版次");
+  }
+}
+{
+  for (const shape of withdrawnNoSourceTier) {
+    const decoy = `${editionScript}\ndef _withdrawn_main(books, title, author):\n    return ${shape}\n`;
+    if (!decoy.includes(shape)) {
+      throw new Error(`source_book_id 缺席断言是空转：注入 ${shape} 后谓词没有命中`);
+    }
+  }
+}
 const editionTestFile = "scripts/tests/test-book-cover-edition.py";
 if (!fs.existsSync(path.join(ROOT, editionTestFile))) {
   throw new Error(`${editionTestFile} 不存在：版次打分只有当期那一次实测，没有可复现的对照`);
@@ -2102,9 +2587,81 @@ for (const [token, why] of [
   ["def old_score", "旧分数没有单独取值的对照：断言只比书名，比不过「差 1 分」这个具体边界"],
   ["title_tier", "书名档位不再被直接断言：并档（把 startswith 与 contains 合成一档）看不见"],
   ["author_tier", "作者档位不再被直接断言：空作者拿 2 档那类缺陷看不见"],
+  ["3300209113", "现抓夹具里《最后一片叶子》的来源版次 bookId 消失：⑧ 没有锚点，短路档失去实测"],
+  ["41988984", "现抓夹具里「最后一片叶子 / 小洛」那条消失：⑧ 的对照不再能复现同名不同书上屏"],
+  ["def leaf_pick", "⑧ 的对照不再是「同一个 pick() 少传一个参数」：内部一改，对照就悄悄失去意义"],
+  ["不在本批搜索结果里", "id 没命中时退回逐档这件事不再被断言：静默兜底＝没人知道这期的版次是猜的"],
+  ["本期读的就是这一版", "来源版次本身是英文版次时的那句专门说明不再被断言：错用「同批无中文版次」会把人引去换不该换的图"],
 ]) {
   if (!editionTestSrc.includes(token)) {
     throw new Error(`${editionTestFile} 少了 ${token}：${why}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 溯源行的「按段查」（2026-10-11《少年维特的烦恼》回补钩子段）
+// `read_prompts()` 以前把每一行**同时**索引进 by_file（裸文件名）和 by_rel（CSV 里写的相对路径），
+// 而 `prompt_row()` 是 `by_rel or by_file`。三段结构下两段都从 atmosphere-1 起编号，于是正文段查
+// `images/atmosphere-1.png` 精确键取不到时，会把钩子段那行 `images-hook/atmosphere-1.png` 借走。
+// 一次跨段借用同时造出一红一漏，两头都坏：
+//   ⑴ 假红——❌「钩子段与正文段用了同一张 Pexels 照片 #32770680」，而当天正文第 1 拍是一棵麦田里的
+//      树、第 2 拍是一只切开的面包，钩子第 1 拍是施马尔卡尔登的椴树，两张毫无关系；
+//   ⑵ 漏判——同一期里 atmosphere-3..6 老老实实报了 ⚠️「没有溯源行」，1、2 没报，正因为被顶了名。
+// 修掉 ⑴ 又当场暴露第二件事：`mode` 只看「全期半数以上引用了 Pexels id」，正文 8 张历史 AI 图 +
+// 钩子 2 张新管线 Pexels 图的期会从 pexels-legacy 掉进 compat，钩子段那两张**刚认证过**的照片
+// 一张都不查（含跨期撞图、认证标记、清单对账）。没测比假红更糟（AGENTS.md「判不了＝没测」），
+// 所以 mode 另看 `hook_pexels_rows`。全库 A/B（`--all`，164 期）：少年维特的烦恼 ❌→✅，
+// 人性的枷锁 / 美丽新世界 compat→pexels-legacy（各多 9/14 行 ⚠️，零新增红），未通过 2 期→1 期。
+const provLookupFile = "scripts/check-image-provenance.py";
+const provLookupCode = codeOnly(provLookupFile);
+// 钉的是「判定措辞」而不是变量名。第一版这里只写 `hook_pexels_rows`，探针实测：把 mode 表达式里的
+// `or hook_pexels_rows` 删干净，变量定义那行还在，token 照样命中——门禁以为判据在，其实判据已经空转。
+// 变量名可以留在磁盘上而不再参与判定，所以必须连括号一起把整条分支钉住。
+const provHookModeBranch =
+  'else "pexels-legacy" if (pexels_rows >= max(1, len(shipped) // 2) or hook_pexels_rows)';
+for (const [token, why] of [
+  [provHookModeBranch, "钩子段单独数一遍这件事不再进 mode：正文是历史 AI 图的期会整期掉进 compat，"
+    + "钩子那两张刚取回、刚认证的照片一张都不查（含跨期撞图、认证标记、清单对账）"],
+  ['sub == "images-hook"', "钩子段的计数不再限定目录：整个段单独数这件事变成一个空变量"],
+  ["by_file.setdefault(os.path.basename(norm), r)", "裸文件名兜底整个没了：历史无前缀剧集的正文溯源全查不到"],
+]) {
+  if (!provLookupCode.includes(token)) {
+    throw new Error(`${provLookupFile} 少了 ${token.slice(0, 60)}：${why}`);
+  }
+}
+// 被撤的形状有两处：⑴「无条件先进 by_file，再判有没有前缀」——借行的入口就是这两行的相邻顺序；
+// ⑵ mode 只看「全期半数」那一行——修掉 ⑴ 之后本期从 pexels-legacy 落到 compat，门禁从假红变成没测。
+// 只断言缺席不够：还得证明这条缺席断言本身能命中（否则它是一段永远为真的空话）。
+const withdrawnProvShapes = [
+  ["        by_file.setdefault(os.path.basename(norm), r)\n" + '        if "/" in norm:',
+    "跨段借行（by_file 无条件收每一行）：正文段会把钩子段的溯源行按裸文件名借走，"
+    + "一次借用同时造出假「同一张照片」红和漏报缺行"],
+  ['else "pexels-legacy" if pexels_rows >= max(1, len(shipped) // 2)',
+    "mode 只看全期半数：钩子段新管线取回的两张认证照片不再把一期留在门禁里，"
+    + "整期掉进 compat＝一张都不查（2026-10-11《少年维特的烦恼》）"],
+];
+for (const [shape, why] of withdrawnProvShapes) {
+  if (provLookupCode.includes(shape)) {
+    throw new Error(`${provLookupFile} 里被撤的写法又回来了：${why}`);
+  }
+  const decoy = `${provLookupCode}\n# withdrawn\n${shape}\n`;
+  if (!decoy.includes(shape)) {
+    throw new Error(`溯源缺席断言是空转：注入 ${shape.slice(0, 44)}… 后谓词没有命中`);
+  }
+}
+const provLookupTestFile = "scripts/tests/test-image-provenance-segment-lookup.py";
+if (!fs.existsSync(path.join(ROOT, provLookupTestFile))) {
+  throw new Error(`${provLookupTestFile} 不存在：按段查询只有当期那一次实测，没有可复现的对照`);
+}
+const provLookupTestSrc = fs.readFileSync(path.join(ROOT, provLookupTestFile), "utf8");
+for (const [token, why] of [
+  ["old_lookup", "被撤的索引写法不再被重放：新写法「不判重复」可能只是夹具变了"],
+  ["32770680", "事故里那个钩子段 photo id 消失：假红失去锚点，② 的对照无从点名"],
+  ['兼容模式', "「整期掉进 compat」这件事不再被断言：钩子被推出门禁的第二次事故看不见"],
+  ["真重复期", "反向对照没了：收紧查询时无法证明真的两段共用一张照片仍然判红"],
+]) {
+  if (!provLookupTestSrc.includes(token)) {
+    throw new Error(`${provLookupTestFile} 少了 ${token}：${why}`);
   }
 }
 
@@ -2527,6 +3084,19 @@ for (const [label, testFile] of [
   // 这道闸把判定提前到十秒内，红就按 AGENTS.md 次序修一轮再量；三头都必须跑：健康放行、
   // 人为推迟行首必须拦、修轴臂必须把它修绿。
   ["Axis guard", "scripts/tests/test-axis-guard.py"],
+  // 渲前 scene-map 闸（2026-10-11）：《少年维特的烦恼》钩子和片头都渲完了（约十分钟），走到正文
+  // 合成那一行才 FileNotFoundError: scene-map.json。它是全库唯一没有这份文件的一期——正文当年走
+  // 专属兜底渲染器，图层—行文配对写死在那个脚本的 SCENE_RUNS 里，从没落成 scene-map.json，
+  // 于是轴闸照过、钩子照渲，只在最后一步炸。这道闸把判定提前到一次 stat + 一次 json.load，
+  // 六个方向都要证：健康放行，缺席/留缝/相邻同图/图不在盘上/行号越界各判一红。
+  ["Scene-map guard", "scripts/tests/test-scene-map-guard.py"],
+  // 渲前输入闸（2026-10-14 第七批）：《焦虑的人》《窄门》《自深深处》各渲了约七分钟，才在交付
+  // 门禁翻红，而红的两族修法相反——盘上没有 book-cover.jpg 时渲染器**不报错**，它打一行
+  // 「[cover] ⚠️ 本期没有封面图：这一层跳过」继续出片，于是成片少了那一层，只能取图后重渲；
+  // brief.json 缺 publish_caption_* 一个像素都不改，补完复跑门禁就行。所以这道闸的价值全在分色：
+  // 缺图拦渲染（红），缺文案只提醒（⚠️，且红话必须写「不必重渲」）。七组对照两头都跑，
+  // 外加真语料那一臂不许钉具体书名——交付期会被整目录搬去 备份/，钉住一期等于把证人交给归档。
+  ["Render inputs guard", "scripts/tests/test-render-inputs-gate.py"],
   // 渲前串行化判据（2026-10-08 任务 #43）：连着两次事故都不是「渲出来不合格」，而是
   // 「渲的时候机器不对」——13:13《昆虫记》六次 attempt 全 ENOTEMPTY（两个会话抢同一棵
   // /private/tmp 的 _npx 安装树，谁都不报错，只是永远渲不出文件）；2026-10-05《李尔王》在
@@ -2537,6 +3107,26 @@ for (const [label, testFile] of [
   // pgrep 桩、给夹具 mtime 打标），否则这条回归只在别的会话恰好空闲时才绿——靠运气绿的回归
   // 会被下一个人删掉。跑的就是生产脚本本体（HF_SOURCE_ONLY=1 source 进来逐条调），不是副本。
   ["Render serialization", "scripts/tests/test-render-serialization.py"],
+  // 配音候选表（2026-10-11）：《朝花夕拾》在渲前轴闸被同时报「token 派生｜Node.js v26.7.0」和
+  // 「逐行覆盖｜读不到『判红 N 行』」两道莫名其妙的红——盘上没错，错在渲染器按三张候选回落、
+  // 而建轴脚本与对账门各自钉死 body-voiceover.mp3：ffprobe 读到不存在的文件→duration=0→整个
+  // throw→判决行消失。这是把「量不了」判成「轴红」，而口径是判不了＝没测、不是红。修法是把
+  // 候选顺序立成全仓库唯一真源 scripts/lib/voice-audio.json，五处测量站点都读它。这条回归跑
+  // 三个方向：表第一项赢过轴记的 audio 字段（《恶意》分叉）、把表退成单名必须重新「量不了」、
+  // 同一个 -story-only 夹具配真表必须算得出判决行；外加混音站点那一处 -story 硬写要带着
+  // 「不归表管」的理由——它定的是观众听到哪一条，按表取第一项等于把 163 期成片音轨换成未处理稿。
+  ["Voice audio table", "scripts/tests/test-voice-path-fallback.py"],
+  // 发布文案门（2026-10-13 第 15 道交付门禁）：前十四道量的是**像素**，而账号 9→10 月掉的
+  // 是转化——剔除发布不足 7 天的样本后人均观看 64.9s→64.8s、完播 11.65%→12.00% 都没动，
+  // 分享率 1.16%→0.75%、转粉率 0.74%→0.33%、有评论条数占比 42%→12% 一起腰斩。同期唯一变的
+  // 是发布文案：中位 453 字（81% 描述写着《书名》）→ 36 字一句金句加标签串（6% 含书名）。
+  // 十四道全绿照样能把一条「看完不动手」的片子交付出去，因为文案从来不是流程的产物
+  // （建门当天全库 122 期 brief.json 里 publish_caption* 字段 0 个）。
+  // 夹具必须自己造一期（--root 指临时目录），不许在真语料上赌它此刻是绿的：并行会话补上
+  // 文案的那一刻，只会读真目录的测试会跟着变绿，而那条红话已经整段没被执行过。
+  // 关键的一条反向对照是 ⑧「同样缺失但成片早于规则日 → ⚠️、exit 0」：少了它，这条门在
+  // 121 期存量上永远红着，下一个人的反应是把它关掉，而不是补文案。
+  ["Publish caption", "scripts/tests/test-publish-caption.py"],
 ]) {
   if (!fs.existsSync(path.join(ROOT, testFile))) {
     throw new Error(`${testFile} 不见了 —— ${label} 回归是上面那处修法的唯一机器可读形式`);
@@ -2641,12 +3231,55 @@ for (const [testFile, tokens] of [
   //   ② 入口必须**复用**三道既有对账而不是自己重述一遍阈值（重述 = 第四个问「轴对不对」
   //      却和第七道门口径不同的地方，本仓库为这类分叉翻过无数次车），并点名修轴次序；
   //   ③ 测试自己必须跑 --no-repair 的红绿两头、脏化和硬链夹具。
-  ["scripts/render-hook-batch.sh", ["check-axis-before-render.py", "axis_guard"]],
+  ["scripts/render-hook-batch.sh", ["check-axis-before-render.py", "axis_guard",
+    "scene_map_guard",
+    // 2026-10-14：输入闸也在这条链上接线。摘掉它 = 第七批那三期照原样花七分钟再翻红。
+    "check-cover-and-caption-before-render.py", "inputs_guard"]],
+  // 渲前输入闸只许「复用」两处真源，不许在本文件里重述：封面那条用的是渲染器跳过这一层时
+  // 调的同一个 source_path / provenance_ok，文案那条用的是交付门 15 的同一个 caption_problems
+  // （150 字下限、≥5 标签、空壳提问那张表都在那边）。重述一次就有第二个口径，而两族修法相反
+  // 这件事本身也要被钉住——所以钉「不必重渲」这句只许出现在文案那一族的输出里。
+  ["scripts/check-cover-and-caption-before-render.py", ["book_cover", "source_path",
+    "provenance_ok", "check-publish-caption.py", "caption_problems", "不必重渲",
+    "fetch-book-cover.py"]],
+  ["scripts/tests/test-render-inputs-gate.py", ["check-cover-and-caption-before-render.py",
+    "缺旁证", "封面图读不出", "不必重渲", "px ·", "真语料"]],
+  // scene-map 闸的判据只许住在这一个脚本里（渲染链上不许重述一遍「图层对不对」，
+  // 那会变成第二个和渲染器口径不同的地方），所以这里钉住它抄的是渲染器自己那五条前置断言的
+  // 输出名，外加「缺席即红」这条与溯源门禁相反的判据。
+  // 2026-10-14 第六条断言（行锚点）的**本体**搬进了 scripts/lib/scene_map_anchors.py，因为
+  // 盖章工具与图层表生成器也要用同一条规则；三份可执行体共一份判据才是这里的目标，所以
+  // 除了闸本身，还钉 lib 与盖章工具各自的输出名——少钉一处，下一次就有人在自己文件里抄一份。
+  ["scripts/check-scene-map-before-render.py", ["render_scene_map_template_fallback.py",
+    "未覆盖", "相邻两层同图", "越界", "没有对应文件", "缺 scene-map.json", "body_images_dir",
+    // 第六族断言的接线与那条「不判」的输出名：删掉 anchor_line 就等于把「判不了」洗成绿。
+    "scene_map_anchors", "SA.judge", "anchor_rows", "判不了＝没测"]],
+  ["scripts/lib/scene_map_anchors.py", ["anchor_start", "anchor_end", "body_rows",
+    // 四条红话分开是要求：合并/删行改行号，改字重盖章，两处命中交人工，别的一条不许混。
+    "无法唯一还原", "被并进了第", "多半只是改了字", "resolve_segment_version"]],
+  ["scripts/stamp-scene-map-anchors.py", ["scene_map_anchors", "SA.stamp", "SA.judge",
+    // 「拒盖」与原子写盘都是这条链的判据形状：错位表不许当成真值盖章，并行渲染不许读到半截 JSON。
+    "拒盖", "atomic_dump", "os.replace", "只锁未来"]],
+  ["scripts/tests/test-scene-map-guard.py", ["check-scene-map-before-render.py",
+    "scene_map_guard", "少年维特的烦恼", "SCENE_RUNS", "mkdtemp",
+    // 2026-10-12：已交付的期会被用户整目录搬出 episodes/（《少年维特的烦恼》就是其中之一），
+    // 所以这一臂改成「在库时必须单独绿 + 绿名单不许为空」。删掉「无从跑起」这一句，
+    // 全库那一臂就退化成一个可以扫到 0 期的绿。
+    "无从跑起",
+    // 2026-10-14 锚点这一族：测试必须真的跑在盖章工具与 lib 上（夹具走真工具而不是自己调
+    // SA.stamp），必须有「剥掉锚点即绿」那一条增量对照，也必须把全库覆盖钉在盘上。
+    "scene_map_anchors", "stamp-scene-map-anchors.py", "half_stamp_shape", "变异阶梯",
+    "全部盖满锚点"]],
   ["scripts/check-axis-before-render.py", ["create-body-timings-precise.mjs", "--verify",
     "check-caption-speech-align.py", "audit-caption-axis.py", "snap-body-timings-vad.py",
-    "行归属没有漂移", "判红", "residual", "snap --apply → audit --apply ×2"]],
+    "行归属没有漂移", "判红", "residual", "snap --apply → audit --apply ×2",
+    // 「版本对不上」必须走它自己的那条红话：《死魂灵》那次它掉进「判决措辞变了」，
+    // 于是修的人被指向对账脚本，而该改的是那一期的 brief.scriptVersion。
+    "ALIGN_VERSION_TOKEN", "版本对不上"]],
   ["scripts/tests/test-axis-guard.py", ["check-axis-before-render.py", "--no-repair",
-    "doctor", "cp -al", "token 派生应保持绿", "body-timings.json"]],
+    "doctor", "cp -al", "token 派生应保持绿", "body-timings.json",
+    // 对照 4 的两头：门 exit 2 拒量（不是 traceback），轴闸原样转述（不是措辞漂移）。
+    "ZeroDivisionError", "版本对不上"]],
   // 渲前串行化这条链的判据全部住在**驱动脚本**里（忙判据、静默窗、锁、缓存目录、旁路理由），
   // 所以测试必须点名被 source 的那个文件本身：它一旦只测自己 clone 的一份副本，驱动被改回
   // 「上来就 npx」也不会有人知道——那正是 13:13《昆虫记》烧掉六次 attempt 的形状。
@@ -2658,7 +3291,11 @@ for (const [testFile, tokens] of [
     "others_rendering", "cover_layer_ready", "render_lock_acquire", "render_lock_run",
     "npm_config_cache", "ZQ_PGREP_TABLE", 'errors="replace"', "stamp_quiet", "HF_SETTLE_BYPASS",
     "接管陈旧锁", "没拿到渲染锁", "有他期渲染在跑", "共享真源缺席", "封层真源", "锁被占",
-    "ps -o args", "HF_SOURCE_ONLY"]],
+    "ps -o args", "HF_SOURCE_ONLY",
+    // 同期认领（2026-10-12 #72）：测试要能跑到盘上那份实现，所以函数名、环境注入点和
+    // **拒进那行的输出名**都得钉住。少钉输出名，等于哪天有人把 [FATAL] 那行改写成一句
+    // 只讲「跳过」的话，端到端那条「原因打在批自己的 stdout 上」就只在测测试自己的字符串。
+    "claim_owner", "claim_episode", "release_claim", "HF_CLAIM_DIR", "已被 pid"]],
   // 驱动这一侧：五种量必须还在同一个文件里被读。判据没有第二个真源，也就不许有第二个地方
   // 用别的措辞问「现在能不能开渲」——旁路的门槛（写理由）也一起钉住，漏字等于把例外搬回对话里。
   // 最后一组 `render_lock_run` / `check.mjs`：锁的覆盖面不止 `npm run check` 里那句 npx——
@@ -2666,7 +3303,12 @@ for (const [testFile, tokens] of [
   // 一半（一边排队、一边直冲，13:13《昆虫记》照原样撞车）。
   ["scripts/render-hook-batch.sh", ["settle_before_render", "others_rendering",
     "cover_layer_ready", "render_lock_acquire", "render_lock_release", "render_lock_run",
-    "npm_config_cache", "ps -o comm=", "HF_SETTLE_BYPASS", "BYPASS_MIN_REASON_CHARS"]],
+    "npm_config_cache", "ps -o comm=", "HF_SETTLE_BYPASS", "BYPASS_MIN_REASON_CHARS",
+    // 同期认领的三个动作 + 注入点必须还在驱动脚本里（2026-10-12 #72）。锁管「这段时间 npx
+    // 那棵树归我」，认领管「这一期的产物和日志归我」——把认领整段删掉，脚本仍然是能跑的，
+    // 而《卓娅和舒拉的故事》12:40 那种「第二个驱动一进场就把别人的门禁汇总截成 245 字节」
+    // 会照原样复发，所以这里钉的是装置本身，不是注释。
+    "claim_owner", "claim_episode", "release_claim", "HF_CLAIM_DIR"]],
   ["scripts/check.mjs", ["runLocked", "render_lock_run", "HF_LOCK_MAX_WAIT"]],
   // token ch 这条链的四个环节都必须被测试点名：Node 侧那两处 trim（取字符 / 跳过纯空白）、
   // 它对齐到的 Python 侧入口，以及两侧共同依据的控制 token 形状。少点一个——比如哪天
@@ -2689,6 +3331,71 @@ for (const [testFile, tokens] of [
   ["scripts/tests/test-verify-head-dangling.py", ["create-body-timings-precise.mjs",
     "shutil.copytree(src / \"audio\" / \"asr\"", "cp -al", "drop_asr_tokens",
     "donor_untouched", "OWN_ONSET", "PARKED_ONSET", "PARKED_DELTA"]],
+  // 配音候选表这条回归必须同时点名「测量侧的五个读表者」和「混音侧那一处不归表管的硬写」。
+  // 少了前一组，它退化成只测自己的夹具；少了后一组，下一个会话会把渲染器的 body_story
+  // 当成漏改的硬编码接进回落——那会把 163 期已交付成片的音轨换成未处理的原始稿（改产品）。
+  ["scripts/tests/test-voice-path-fallback.py", ["voice-audio.json", "VOICE_TABLE_PATH",
+    "segment_voice", "voice_candidates", "check-caption-speech-align.py",
+    "create-body-timings-precise.mjs", "snap-body-timings-vad.py", "audit-caption-axis.py",
+    "render_scene_map_template_fallback.py", "不归 lib/voice-audio.json 候选表管",
+    "量不了", "Invalid voiceover duration"]],
+  // 发布文案门（第 15 道交付门禁，2026-10-13）的两个面都要钉住。
+  // 测试这一侧：夹具必须自己搭一期（mkdtemp + --root），不许在真语料上赌绿——补上文案的那一刻
+  // 只会读真目录的测试会跟着变绿，而红话整段没被执行过。这几个 token 各是一条对照的输出名，
+  // 少钉一个，那一半就可以整段删掉而这里照绿：字段名（两端修法不同）、下限、书名必须在正文、
+  // 空壳提问、存量不追认、未成片的交付口径、--final 的口子、空扫描。
+  ["scripts/tests/test-publish-caption.py", ["check-publish-caption.py", "mkdtemp", "--root",
+    "publish_caption_wechat", "publish_caption_short_note", "150 字下限", "正文里没有《夹具书》",
+    "空壳", "不判红", "存量缺文案", "不认未成片期", "--final", "空扫描不是通过",
+    "真语料", "绿 1"]],
+  // 第 16 道周度门禁（2026-10-13 建、2026-10-14 接线）这一族要钉的是「仪器没有第二个口径」
+  // 和「仪器真的有调用点」两件事：
+  //   · check-channel-metrics.py / check_all —— 判决必须借门禁自己的入口，抄一份阈值就等于
+  //     建了第二个口径（阈值 0.5%/0.2% 改了而测试还绿，正是这道门要防的静默失效）；
+  //   · mkdtemp / --csv / 夹具书 —— 夹具必须自己搭数据。真语料现在成熟样本是 **0 条**
+  //     （127 行全在 7 天冷启动里），只读真目录的测试会永远走「退 0 打提示」那一支，
+  //     而三种 ⚠️ 分支一次都没被执行过——那是一条看起来在跑、实际空转的回归；
+  //   · 分享率 / 转粉率 / 零评论 / 成熟样本 / 发布不足7天 —— 五条判决各自的输出名，
+  //     少钉一条，对应那一半对照就可以整段删掉而这里照绿；
+  //   · check.mjs / 调用点 —— 反向钉上面新加的那次 run()：这道门退 0、只打 ⚠️，
+  //     没有任何下游会替它红，所以「把它从 sweep 里删掉一行」必须让这份回归当场红。
+  ["scripts/tests/test-channel-metrics.py", ["check-channel-metrics.py", "check_all",
+    "mkdtemp", "--csv", "夹具书", "分享率", "转粉率", "零评论", "成熟样本",
+    "发布不足7天", "十三组对照", "check.mjs", "调用点",
+    "link-channel-metrics.py", "无从跑起"]],
+  // 变异阶梯这一侧要钉的是「九条变异各自有名字、有锚、有归属对照」：M1/M2 那两条分开钉是因为
+  // 「摘掉调用」和「把调用写成注释」是两个不同的失效——后者只换前缀就能骗过只看文件名的断言；
+  // _patch 与「变异锚点命中」钉的是锚不唯一必须红（生产写法漂了却静默跳过＝阶梯空转，
+  // 而空转的阶梯比没有阶梯更糟：它读起来像证明过）；「健康对照」钉的是九条红之前那条绿；
+  // cm-wiring- 钉的是夹具树落在系统临时目录而不是仓库 tmp/（那是回收靶子）。
+  ["scripts/tests/test-channel-metrics-wiring.py", ["test-channel-metrics.py",
+    "check-channel-metrics.py", "check.mjs", "M1 摘掉 run()", "M2 把 run() 退化成一句注释",
+    "M9 无导出时静默退 0", "_patch", "变异锚点命中", "健康对照", "空断言", "cm-wiring-",
+    "MUTATIONS", "回收靶子"]],
+  // 第 17 道这一族要钉的是「判据只有一处」和「两支语义仍可测」：
+  //   · cover_cell / hook-backfill-status / getmtime —— 判据必须 import 进度表那一个函数，
+  //     门里出现 getmtime 就是抄了第二份口径（⑨ 那两组各钉一头）；
+  //   · accept_legacy / 回补名单 —— legacy 在已交付侧算成品、在名单侧不算，这两支必须仍可测；
+  //   · 三剑客 / 敢把命交给别人 —— 全库唯一一例真证人，证人换了期数说明这条已不再是事故本体；
+  //   · 空扫描 / 无从跑起 —— 判不到任何一期要红（exit 2），真语料被归档要印出来而不是静默跳过；
+  //   · check.mjs / 十组对照 —— 接线与「跑了几组」的自证。
+  ["scripts/tests/test-cover-hook-line.py", ["check-cover-hook-line.py", "cover_cell",
+    "hook-backfill-status", "getmtime", "accept_legacy", "回补名单", "三剑客",
+    "敢把命交给别人", "空扫描", "无从跑起", "check.mjs", "十一组对照", "cover_hook_legacy",
+    "M1 cover_stale 恒 False", "M4 空扫描不再红", "变异锚点命中", "先确认夹具形状对"]],
+  // 草稿期族统计的断言本体在 scripts/check-hook-openers.py 一处（加 --draft-census 那段），
+  // 测试在 scripts/tests/test-draft-census.py 一处。两者都要钉：改门的人不能只在门上加注释，
+  // 删测试的人不能以为只是删了一个测试——这条门在录音前拦族过载，漏掉就是 10 期后
+  // 「读书动作」从 12 期再涨到 25 期的历史重演。
+  ["scripts/tests/test-draft-census.py", ["check-hook-openers.py", "--draft-census",
+    "CAP", "读书动作", "把一份工", "抬头看那"]],
+  // 判据本体这一侧：规则文档必须被点名（否则文案的形状只活在代码里，改规则的人找不到它），
+  // 逐字复述那条必须借 check-hook-openers.py 的 longest_shared() 而不是自己抄一份（抄来的那份
+  // 测的是副本，原口径改了这里不跟着改），mode/override 两个字段名是「短版必须留痕」这条的
+  // 唯一落点，而 `--all` 的非严格与末行压短是交付汇总能读这道门的前提。
+  ["scripts/check-publish-caption.py", ["docs/rules/publish-caption.md", "check-hook-openers.py",
+    "longest_shared", "publish_caption_mode", "publish_caption_short_note", "CAPTION_MIN_CHARS",
+    "存量缺文案", "SHELL_QUESTIONS", "RULE_DATE", "--delivery", "--final", "空扫描不是通过"]],
 ]) {
   const dipSrc = fs.readFileSync(path.join(ROOT, testFile), "utf8");
   for (const token of tokens) {
@@ -3012,8 +3719,13 @@ for (const [rel, shouldKeep, why] of [
   ["caption-track.json", true, "字幕轴是交付门禁 find_tmp_dir() 的回落目标，删了重验交付会报「找不到字幕轨」"],
   ["body.mp4.book-cover-sha", true, "重渲幂等指纹；后缀是 -sha 不是 .sha，写成 .sha 一个都匹配不到"],
   ["body.mp4.book-cover-sha.txt", false, "指纹文件不带 .txt 后缀"],
+  ["title.png", true, "门 8 拿它的 alpha 当书名层模板、门 13 核它的 sha——删了重验就红在「渲染器没画这一层」"],
+  ["title-meta.json", true, "门 13 的渲染时证人（当时真正加载的 face）"],
+  ["book-cover.png", true, "门 14 --require 时证明本期确实画了本书封面叠层"],
+  ["disclaimer.png", true, "门 12 的常驻声明叠层证人"],
+  ["body-bg.json", true, "门 14 残差沿的同期切镜表证人"],
   ["body.mp4", false, "正文中间件，可由 caption-track.json + images-body/ 重建"],
-  ["body-bg.mp4", false, "背景中间件，可重建"],
+  ["body-bg.mp4", false, "背景中间件，单期实测 44-137 MB：门 4 要的正是它，所以它只能被回收、不能因门禁而留下，缺席由 lib/cleanup_evidence.py 认签名"],
   ["sub.mov", false, "字幕轨中间件，可重建"],
   ["cover-seq/f_0000.png", false, "逐帧 PNG 序列——31 期里最没必要保留的部分，必须递归删掉"],
   ["cover-seq/_blank.png", false, "同上，帧序列目录内的一切"],
@@ -3024,20 +3736,163 @@ for (const [rel, shouldKeep, why] of [
     throw new Error(`${cleanupFile} 的保留判定对 ${rel} 返回 ${got}，应为 ${shouldKeep}——${why}`);
   }
 }
-// 保留清单不得含媒体后缀，否则这个脚本自己就变成了它要清理的东西。
+// 保留清单不得含**体积中间件**，否则这个脚本自己就变成了它要清理的东西。
+// 口径不是「KEEP_EXACT 里不许出现 .png」：那一条 2026-10-11 就是这么写的，于是回收把门 8/12/13/14
+// 读的证人（title.png / disclaimer.png / book-cover.png / title-meta.json，合计单期 <1 MB）一并删掉，
+// 《我弥留之际》门禁全绿之后重跑就红了 4 道——红在「这一代渲染器没画这一层」这种根本不存在的
+// 缺陷上。体积和证据是两件事，这里只禁前者。
 for (const name of cleanup.KEEP_EXACT) {
-  if (/\.(mp4|mov|png|m4a|mp3)$/i.test(name)) {
-    throw new Error(`${cleanupFile} 的 KEEP_EXACT 含媒体文件 ${name}：保留清单只放字幕轴、指纹和配置快照`);
+  if (cleanup.BULK_MIDDLEWARE.has(name)
+      || cleanup.BULK_DIRS.has(name)
+      || cleanup.BULK_PREFIXES.some((p) => name.startsWith(p))) {
+    throw new Error(`${cleanupFile} 的 KEEP_EXACT 含体积中间件 ${name}：保留清单只放字幕轴、指纹、`
+      + "配置快照和门禁读的证人，不放 body/body-bg/sub/cover-seq/cap-* 这类可由本期重建的大件");
   }
 }
 for (const suffix of cleanup.KEEP_SUFFIX) {
   if (/\.(mp4|mov|png|m4a|mp3)$/i.test(suffix)) {
-    throw new Error(`${cleanupFile} 的 KEEP_SUFFIX 含媒体后缀 ${suffix}：保留清单只放字幕轴、指纹和配置快照`);
+    throw new Error(`${cleanupFile} 的 KEEP_SUFFIX 含媒体后缀 ${suffix}：后缀式保留会把每行一张的 cap-*.png `
+      + "整体留下（单期 4-6 MB）；证人一律按精确文件名列进 keep_exact");
   }
 }
 // _raw 是 Pexels 原图：grading --restore 靠它复原，清掉等于不可逆地毁掉溯源链的一环。
 if (!cleanup.PROTECTED.has("_raw")) {
   throw new Error(`${cleanupFile} 的 PROTECTED 丢了 _raw：它是 Pexels 原图，grade-atmosphere-images.py --restore 靠它复原`);
+}
+// ④ 回收清单必须跟得上门禁**实际读走**的文件名：把每一道读 tmp 的门禁扫一遍，
+//    它们从 tmp 取的每一个名字要么在保留清单里，要么在体积名单里（那种缺席由签名判定兜）。
+//    以后新增一道读证人的门却忘了改名单，这里就红——不然下一次「回收之后重验全红」
+//    又要靠某个人恰好重跑一遍交付门禁才发现（2026-10-11 就是靠重跑发现的）。
+const evidenceReaders = [
+  "scripts/check-episode-delivery.py", "scripts/check-hook-no-bookmark.py",
+  "scripts/check-title-font.py", "scripts/check-book-cover-overlay.py",
+  "scripts/check-disclaimer-overlay.py",
+];
+const tmpReadNames = new Map();
+for (const reader of evidenceReaders) {
+  const src = fs.readFileSync(path.join(ROOT, reader), "utf8");
+  for (const m of src.matchAll(/os\.path\.join\(\s*tmp\s*,\s*["']([^"']+)["']/g)) {
+    if (!tmpReadNames.has(m[1])) tmpReadNames.set(m[1], reader);
+  }
+}
+if (tmpReadNames.size < 6) {
+  throw new Error(`只从 ${evidenceReaders.length} 道门禁里扫到 ${tmpReadNames.size} 个 tmp 文件名：`
+    + "扫描式本身失效了（门禁改了 join 的写法），这道 ④ 会从断言退化成空转——去核对正则，别改名单");
+}
+for (const [name, reader] of [...tmpReadNames.entries()].sort()) {
+  if (cleanup.KEEP_EXACT.has(name)) continue;
+  if (cleanup.BULK_MIDDLEWARE.has(name) || cleanup.BULK_DIRS.has(name)) continue;
+  throw new Error(`${reader} 读 tmp/${name}，而 scripts/lib/cleanup-keep.json 的保留清单没有它：`
+    + "cleanup-tmp.mjs 回收时会把这份证人删掉，之后重验交付就红在「渲染器没画这一层」上"
+    + "（2026-10-11《我弥留之际》实测 4 道）。要么把它加进 keep_exact，要么证明它真能由本期重建。");
+}
+// body-bg.mp4 与 cap-*.png 是被政策删走的那一份证据：门 4 必须能区分「回收」和「没渲出来」。
+const deliverySrc = fs.readFileSync(path.join(ROOT, "scripts/check-episode-delivery.py"), "utf8");
+if (!/classify_missing_background/.test(deliverySrc) || !/STATUS_RECLAIMED/.test(deliverySrc)) {
+  throw new Error("scripts/check-episode-delivery.py 不再问 lib/cleanup_evidence.py 的背景缺席签名："
+    + "门 4 会退回把一次合规回收报成渲染缺件（lib/cleanup-keep.json 的 _incident）");
+}
+const evidenceSrc = fs.readFileSync(path.join(ROOT, "scripts/lib/cleanup_evidence.py"), "utf8");
+if (!/cleanup-keep\.json/.test(evidenceSrc)) {
+  throw new Error("scripts/lib/cleanup_evidence.py 没读 lib/cleanup-keep.json：名单又要变成两份，"
+    + "而 JS 侧删、Python 侧读的两份迟早漂");
+}
+// ⑤ 判定本身也跑正反两向（健康的回收目录必须判 reclaimed，只缺背景或连轴都不在必须判 broken）：
+//    在源码里 grep 一个字符串证明不了行为，同 isKeepTarget 上面那条理由。
+for (const [files, want, why] of [
+  [["caption-track.json", "title.png", "book-cover.json", "body-cover-sha"], "reclaimed",
+    "回收过的期：背景与字幕位图同缺，保留清单内的证人在位"],
+  [["caption-track.json", "title.png", "cap-000-1.png"], "broken",
+    "cap-*.png 还在而背景不在——两者同属一次正文渲染，只能是被手工删了中间件或渲染没跑完"],
+  [["caption-track.json"], "broken",
+    "连书名层底片都没有：无从说明这一期渲到过正文"],
+  [["caption-track.json", "title.png", "cap-000-1.png", "body-bg.mp4"], "intact",
+    "背景中间件健在的期：这道判定不该插手，门 4 照原作差"],
+]) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "book-video-cleanup-evidence-"));
+  try {
+    for (const f of files) fs.writeFileSync(path.join(dir, f), "x");
+    const r = run("python3", ["scripts/lib/cleanup_evidence.py", "--probe", dir], ROOT,
+      { encoding: "utf8" });
+    let got = null;
+    try { got = JSON.parse((r.stdout || "").trim().split("\n").pop()).status; } catch { got = `读不到 JSON：${(r.stdout || r.stderr || "").trim().slice(0, 160)}`; }
+    if (got !== want) {
+      throw new Error(`lib/cleanup_evidence.py 对「${why}」的目录判成 ${got}，应为 ${want}：`
+        + "判据一漂，门 4 就在假红与假绿之间二选一");
+    }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ⑥ 回收阶段的「在渲守卫」：cleanup-tmp.mjs 必须拒绝清理批渲染链正认领的期。
+//    旧写法只问「这期有没有已交付成片」，而**重渲一期已交付的片子同样满足它**——
+//    2026-10-11 13:57 实测三个 render-hook-batch 正活着，它们自己的 tmp/<书名>_tpl 同时出现在
+//    可释放名单里，--apply 删掉的是正在写的 body-bg.mp4，毁掉的是那一次渲染。当时 AGENTS.md
+//    只能写「用 --only 自己避开」，那是靠人记得；现在认领（tmp/render-b3/claim/<书名>.pid，
+//    render-hook-batch.sh 开工写、收工删）是机器落盘的在渲口径，清理侧读它。
+//    四条对照全在 os.tmpdir() 的假根目录里真跑子进程：判据是行为，不是源码里有没有这段注释；
+//    也不用真实 episodes/——守卫该不该红，跟此刻有没有人在渲无关，更不该被一次全库回收跑掉。
+const claimDirEnv = "HF_CLAIM_DIR";   // 渲染侧与清理侧共用同一个变量名：搬认领目录只能一起搬
+if (!/HF_CLAIM_DIR/.test(fs.readFileSync(path.join(ROOT, "scripts", "render-hook-batch.sh"), "utf8"))) {
+  throw new Error("scripts/render-hook-batch.sh 不再通过 HF_CLAIM_DIR 决定认领目录："
+    + "cleanup-tmp.mjs 读的那份在渲口径就成了凭空猜路径");
+}
+const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "book-video-cleanup-claim-"));
+try {
+  const book = "守卫对照期";
+  const claimDir = path.join(fixture, "claim");
+  fs.mkdirSync(path.join(fixture, "tmp", `${book}_tpl`), { recursive: true });
+  fs.mkdirSync(path.join(fixture, "episodes", book, "renders"), { recursive: true });
+  fs.writeFileSync(path.join(fixture, "tmp", `${book}_tpl`, "caption-track.json"), "x");
+  fs.writeFileSync(path.join(fixture, "tmp", `${book}_tpl`, "title.png"), "x");
+  fs.writeFileSync(path.join(fixture, "tmp", `${book}_tpl`, "body.mp4"), "bulk-middleware");
+  fs.writeFileSync(path.join(fixture, "episodes", book, "renders", `${book}-final.mp4`), "final");
+  const claimFile = path.join(claimDir, `${book}.pid`);
+  const writeClaim = (content) => {
+    fs.mkdirSync(claimDir, { recursive: true });
+    fs.writeFileSync(claimFile, content);
+  };
+  const cleanupArgs = (list) => run(process.execPath,
+    [path.join(ROOT, cleanupFile), ...list], fixture, {
+      encoding: "utf8", env: { ...process.env, [claimDirEnv]: claimDir } });
+
+  // 对照①（健康的：没人认领 → 照常进名单）
+  const free = cleanupArgs([]);
+  if (free.status !== 0 || !free.stdout.includes(book)) {
+    throw new Error(`无认领时清理脚本没把这期列进干跑（exit=${free.status}）：`
+      + (free.stderr || free.stdout || "").trim().slice(0, 200)
+      + "\n——守卫如果默认拒绝，回收阶段就退化成它要防的那个堆积（10.8 GB）");
+  }
+  // 对照②（本守卫要拦的形状：活 pid 的认领 + 点名回收 → 必须非零退出并说明原因）
+  writeClaim(`${process.pid} ${Math.floor(Date.now() / 1000)} ${book}\n`);
+  const named = cleanupArgs(["--only", book]);
+  if (named.status === 0 || !/拒绝清理/.test(named.stderr || "")) {
+    throw new Error(`活认领下 --only ${book} 仍然跑成 exit=${named.status}：`
+      + "清理会删掉正在渲染的中间件（2026-10-11 实测三个批渲染同时中招）。"
+      + "点名要回收的期在渲时，请求本身不安全，必须红——`已清理：0 MB` 那种行读不出自己被跳过");
+  }
+  // 对照③（批量模式：跳过并留名单，不许静默）
+  const sweep = cleanupArgs([]);
+  if (sweep.status !== 0 || !/正在渲染/.test(sweep.stdout || "")) {
+    throw new Error(`全库干跑没把认领中的期报成「跳过 N 期正在渲染」（exit=${sweep.status}）：`
+      + "守卫可以在 --only 下红，但批量回收静默跳过等于没人知道它跳过过");
+  }
+  // 对照④（陈旧认领不永远堵路：pid 已死 → 视同无认领；读不出 pid → 偏向不删那一侧）
+  writeClaim(`2147483647 1 ${book}\n`);
+  const stale = cleanupArgs(["--only", book]);
+  if (stale.status !== 0) {
+    throw new Error(`pid 已死的陈旧认领仍然拒绝回收（exit=${stale.status}）：`
+      + "批渲染崩在 release_claim 之前时，这期的暂存区就再也回收不了了");
+  }
+  writeClaim("这行没有 pid\n");
+  const garbage = cleanupArgs(["--only", book]);
+  if (garbage.status === 0 || !/读不出 pid/.test(garbage.stderr || "")) {
+    throw new Error(`认领内容解析不出 pid 时脚本放行了（exit=${garbage.status}）：`
+      + "删错的代价是毁掉一次正在跑的渲染，不删的代价只是暂存区多留一会儿——判据要往不删那一侧偏");
+  }
+} finally {
+  fs.rmSync(fixture, { recursive: true, force: true });
 }
 
 const modelPath = path.join(ROOT, "assets", "models", "whisper", "ggml-base.bin");
